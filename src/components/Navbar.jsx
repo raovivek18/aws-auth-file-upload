@@ -8,7 +8,7 @@ const Navbar = () => {
             <span><strong>SecureShare</strong></span>
 
             <span style={{ float: "right" }}>
-                {user?.attributes?.email || user?.signInDetails?.loginId} |
+                {user?.attributes?.email} |
                 <button onClick={signOut} style={{ marginLeft: "10px" }}>
                     Logout
                 </button>
