@@ -1,14 +1,18 @@
 import MainLayout from "../layout/MainLayout";
 import { useAuth } from "../context/AuthContext";
+import FileUpload from "../components/FileUpload";
 
 const Dashboard = () => {
     const { user } = useAuth();
 
     return (
         <MainLayout>
-            <h2>Dashboard</h2>
-            <p>Welcome back, {user?.username}</p>
-            <p>This is your secure file sharing dashboard.</p>
+            <div className="dashboard-header">
+                <h2>Welcome back, {user?.username} 👋</h2>
+                <p>Manage your secure files and documents here.</p>
+            </div>
+
+            <FileUpload />
         </MainLayout>
     );
 };

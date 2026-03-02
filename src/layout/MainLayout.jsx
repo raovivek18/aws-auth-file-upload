@@ -4,7 +4,7 @@ const MainLayout = ({ children }) => {
     return (
         <>
             <Navbar />
-            <div style={{ padding: "40px" }}>{children}</div>
+            <div className="dashboard-container">{children}</div>
         </>
     );
 };
