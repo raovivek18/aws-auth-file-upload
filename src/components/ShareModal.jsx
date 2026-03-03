@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import './ShareModal.css';
 
-const ShareModal = ({ isOpen, onClose, fileKey, onGenerate }) => {
+const ShareModal = ({ isOpen, onClose, file, onGenerate }) => {
     const [shareUrl, setShareUrl] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [copied, setCopied] = useState(false);
     const [timeLeft, setTimeLeft] = useState(0);
-    const EXPIRATION_TIME = 300; // 5 minutes in seconds
+
+    // 5 mins for private, 24 hours for public (simulation)
+    const PRIVATE_EXPIRY = 300;
+    const PUBLIC_EXPIRY = 86400;
 
     useEffect(() => {
         let timer;
@@ -21,11 +24,14 @@ const ShareModal = ({ isOpen, onClose, fileKey, onGenerate }) => {
     }, [shareUrl, timeLeft]);
 
     const handleGenerate = async () => {
+        if (!file?.key) return;
+
         setIsGenerating(true);
         try {
-            const url = await onGenerate(fileKey, EXPIRATION_TIME);
+            const expiry = file.sharingStatus === 'PUBLIC' ? PUBLIC_EXPIRY : PRIVATE_EXPIRY;
+            const url = await onGenerate(file.key, expiry);
             setShareUrl(url);
-            setTimeLeft(EXPIRATION_TIME);
+            setTimeLeft(expiry);
             setCopied(false);
         } catch (err) {
             console.error(err);
@@ -41,47 +47,57 @@ const ShareModal = ({ isOpen, onClose, fileKey, onGenerate }) => {
     };
 
     const formatTime = (seconds) => {
+        if (seconds > 3600) {
+            const hours = Math.floor(seconds / 3600);
+            return `${hours}h remaining`;
+        }
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
-    if (!isOpen) return null;
+    if (!isOpen || !file) return null;
 
-    const fileName = fileKey.split('/').pop();
+    const isPublic = file.sharingStatus === 'PUBLIC';
 
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content glass-card" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h3>Secure Sharing</h3>
+                    <h3>{isPublic ? '🌐 Public Sharing' : '🔒 Private Sharing'}</h3>
                     <button className="close-btn" onClick={onClose}>&times;</button>
                 </div>
 
                 <div className="modal-body">
                     <div className="file-preview">
-                        <span className="file-icon">📄</span>
+                        <span className="file-icon">{isPublic ? '🌍' : '📄'}</span>
                         <div className="file-details">
-                            <span className="file-name">{fileName}</span>
-                            <span className="file-status">Private S3 Access</span>
+                            <span className="file-name">{file.name}</span>
+                            <span className={`file-status ${file.sharingStatus?.toLowerCase()}`}>
+                                {isPublic ? 'Anyone with link can view' : 'Only you can access (Private)'}
+                            </span>
                         </div>
                     </div>
 
                     {!shareUrl ? (
                         <div className="generate-state">
-                            <p>Generate a time-limited pre-signed URL to share this file securely.</p>
+                            <p>
+                                {isPublic
+                                    ? 'Generate a long-lived link for this public file.'
+                                    : 'Generate a secure, time-limited link for this private file.'}
+                            </p>
                             <button
-                                className="btn-primary"
+                                className={`btn-primary ${isPublic ? 'public' : 'private'}`}
                                 onClick={handleGenerate}
                                 disabled={isGenerating}
                             >
-                                {isGenerating ? 'Generating...' : 'Generate 5-Minute Link'}
+                                {isGenerating ? 'Generating...' : `Generate ${isPublic ? '24-Hour' : '5-Minute'} Link`}
                             </button>
                         </div>
                     ) : (
                         <div className="link-state">
                             <div className="timer-badge">
-                                Expiring in: <span className="countdown">{formatTime(timeLeft)}</span>
+                                {isPublic ? 'Link is active' : 'Expiring in'}: <span className="countdown">{formatTime(timeLeft)}</span>
                             </div>
                             <div className="copy-input-group">
                                 <input
@@ -95,8 +111,9 @@ const ShareModal = ({ isOpen, onClose, fileKey, onGenerate }) => {
                                 </button>
                             </div>
                             <p className="security-note">
-                                This link grants temporary access using AWS Signature V4.
-                                The file remains private in your S3 bucket.
+                                {isPublic
+                                    ? 'This link uses a long-lived S3 signature. Sharing this link allows anyone to view the file.'
+                                    : 'This link uses a temporary AWS Signature V4. The file remains strictly private.'}
                             </p>
                         </div>
                     )}

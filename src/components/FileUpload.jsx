@@ -11,7 +11,7 @@ const FileUpload = () => {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [loadingFiles, setLoadingFiles] = useState(true);
-    const [shareModal, setShareModal] = useState({ isOpen: false, fileKey: '' });
+    const [shareModal, setShareModal] = useState({ isOpen: false, file: null });
 
     // Fetch files on mount
     const fetchFiles = useCallback(async () => {
@@ -65,8 +65,18 @@ const FileUpload = () => {
         }
     };
 
-    const handleShare = (key) => {
-        setShareModal({ isOpen: true, fileKey: key });
+    const handleShare = (file) => {
+        setShareModal({ isOpen: true, file });
+    };
+
+    const handleTogglePrivacy = async (file) => {
+        try {
+            await fileService.toggleFilePrivacy(file);
+            setSuccess(`File "${file.name}" is now ${file.sharingStatus === 'PRIVATE' ? 'PUBLIC' : 'PRIVATE'}`);
+            fetchFiles();
+        } catch (err) {
+            setError(err.message);
+        }
     };
 
     const handleGenerateLink = async (key, expiresIn) => {
@@ -150,11 +160,18 @@ const FileUpload = () => {
                                 </div>
                                 <div className="file-actions">
                                     <button
-                                        className="btn-action view"
-                                        onClick={() => handleShare(file.key)}
-                                        title="View/Download"
+                                        className={`btn-action privacy ${file.sharingStatus?.toLowerCase()}`}
+                                        onClick={() => handleTogglePrivacy(file)}
+                                        title={file.sharingStatus === 'PRIVATE' ? 'Make Public' : 'Make Private'}
                                     >
-                                        👁
+                                        {file.sharingStatus === 'PRIVATE' ? '🔒' : '🌐'}
+                                    </button>
+                                    <button
+                                        className="btn-action view"
+                                        onClick={() => handleShare(file)}
+                                        title="Share / View"
+                                    >
+                                        🔗
                                     </button>
                                     <button
                                         className="btn-action delete"
@@ -171,10 +188,11 @@ const FileUpload = () => {
             </div>
 
 
+
             <ShareModal
                 isOpen={shareModal.isOpen}
-                fileKey={shareModal.fileKey}
-                onClose={() => setShareModal({ isOpen: false, fileKey: '' })}
+                file={shareModal.file}
+                onClose={() => setShareModal({ isOpen: false, file: null })}
                 onGenerate={handleGenerateLink}
             />
         </div>

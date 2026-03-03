@@ -102,10 +102,21 @@ const fileService = {
     },
 
     /**
-     * Updates sharing status for a file
+     * Toggles file privacy between PUBLIC and PRIVATE
+     * @param {Object} file - The file metadata object
+     * @returns {Promise<Object>} - Updated metadata
      */
-    updateSharing: async (id, status, expiration = null) => {
-        return await metadataService.updateSharing(id, status, expiration);
+    toggleFilePrivacy: async (file) => {
+        try {
+            const newStatus = file.sharingStatus === 'PRIVATE' ? 'PUBLIC' : 'PRIVATE';
+            // If making public, we might want to set a default "long" expiration or clear it
+            const expiration = newStatus === 'PUBLIC' ? null : null;
+
+            return await metadataService.updateSharing(file.id, newStatus, expiration);
+        } catch (error) {
+            console.error('Error toggling privacy:', error);
+            throw new Error('Failed to update sharing settings.');
+        }
     },
 
     /**
@@ -132,4 +143,5 @@ const fileService = {
 };
 
 export default fileService;
+
 

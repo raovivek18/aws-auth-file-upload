@@ -327,7 +327,23 @@ h3 {
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
+.btn-action.privacy {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+}
+
+.btn-action.privacy.public {
+    background: rgba(16, 185, 129, 0.1);
+    color: #34d399;
+}
+
+.btn-action.privacy:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
 .btn-action.delete {
+
     background: rgba(239, 68, 68, 0.1);
     color: #f87171;
 }

@@ -88,9 +88,26 @@
     color: var(--text-muted);
 }
 
+.file-status.public {
+    color: #34d399;
+}
+
+.file-status.private {
+    color: #94a3b8;
+}
+
+.btn-primary.public {
+    background: linear-gradient(135deg, #059669, #10b981);
+}
+
+.btn-primary.private {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+}
+
 .generate-state {
     text-align: center;
 }
+
 
 .generate-state p {
     color: var(--text-muted);
