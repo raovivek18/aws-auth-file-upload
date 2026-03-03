@@ -1,16 +1,18 @@
 import { uploadData, list, remove, getUrl } from 'aws-amplify/storage';
+import metadataService from './metadataService';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
 
 /**
  * Service for handling file operations with AWS Amplify Storage (v6+)
+ * and Metadata tracking via DynamoDB
  */
 const fileService = {
     /**
-     * Uploads a file to a user-specific folder
+     * Uploads a file to S3 and saves its metadata to DynamoDB
      * @param {File} file - The file object to upload
      * @param {string} userId - The unique ID of the user
-     * @returns {Promise<Object>} - The upload result
+     * @returns {Promise<Object>} - The result containing S3 key and metadata
      */
     uploadFile: async (file, userId) => {
         if (!file) {
@@ -26,6 +28,7 @@ const fileService = {
         const key = `${userId}/${Date.now()}-${cleanFileName}`;
 
         try {
+            // 1. Upload to S3
             const uploadOperation = uploadData({
                 key,
                 data: file,
@@ -39,60 +42,84 @@ const fileService = {
                 }
             });
 
-            const result = await uploadOperation.result;
-            return { ...result, key };
+            await uploadOperation.result;
+
+            // 2. Save metadata to DynamoDB
+            const metadata = await metadataService.saveMetadata({
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                key: key,
+                owner: userId,
+                sharingStatus: 'PRIVATE'
+            });
+
+            return { key, metadata };
         } catch (error) {
-            console.error('Error uploading file:', error);
-            throw new Error(error.message || 'Failed to upload file. Please try again.');
+            console.error('Error during file upload process:', error);
+            throw new Error(error.message || 'Failed to upload file or save metadata.');
         }
     },
 
     /**
-     * Lists files for a specific user
-     * @param {string} userId - The unique ID of the user
-     * @returns {Promise<Array>} - List of files
+     * Lists files from the Metadata service (DynamoDB) instead of S3 listing
+     * This is faster, more scalable, and provides rich metadata like sharing status.
+     * @returns {Promise<Array>} - List of file metadata
      */
-    listFiles: async (userId) => {
+    listFiles: async () => {
         try {
-            const result = await list({
-                prefix: `${userId}/`,
-            });
+            const items = await metadataService.getUserFiles();
 
-            // Sort files by lastModified (newest first) if available
-            return result.items.sort((a, b) => {
-                if (!a.lastModified || !b.lastModified) return 0;
-                return new Date(b.lastModified) - new Date(a.lastModified);
-            });
+            // Sort by upload timestamp (newest first)
+            return items.sort((a, b) =>
+                new Date(b.uploadTimestamp) - new Date(a.uploadTimestamp)
+            );
         } catch (error) {
-            console.error('Error listing files:', error);
+            console.error('Error listing files from metadata:', error);
+            // Fallback to S3 list if needed, but here we strictly use metadata
             throw new Error(error.message || 'Failed to fetch file list.');
         }
     },
 
     /**
-     * Deletes a file from storage
-     * @param {string} key - The full key of the file
+     * Deletes a file from storage and its corresponding metadata
+     * @param {string} key - The S3 object key
+     * @param {string} metadataId - The DynamoDB record ID
      */
-    deleteFile: async (key) => {
+    deleteFile: async (key, metadataId) => {
         try {
+            // 1. Delete from S3
             await remove({ key });
+
+            // 2. Delete metadata from DynamoDB
+            if (metadataId) {
+                await metadataService.deleteMetadata(metadataId);
+            }
         } catch (error) {
-            console.error('Error deleting file:', error);
+            console.error('Error deleting file or metadata:', error);
             throw new Error(error.message || 'Failed to delete file.');
         }
     },
 
     /**
+     * Updates sharing status for a file
+     */
+    updateSharing: async (id, status, expiration = null) => {
+        return await metadataService.updateSharing(id, status, expiration);
+    },
+
+    /**
      * Generates a temporary pre-signed URL for sharing/viewing
      * @param {string} key - The full key of the file
+     * @param {number} expiresIn - Expiration time in seconds
      * @returns {Promise<string>} - The pre-signed URL
      */
-    generateShareLink: async (key) => {
+    generateShareLink: async (key, expiresIn = 3600) => {
         try {
             const getUrlResult = await getUrl({
                 key,
                 options: {
-                    expiresIn: 3600, // Link valid for 1 hour
+                    expiresIn,
                     validateObjectExistence: true
                 }
             });
@@ -105,3 +132,4 @@ const fileService = {
 };
 
 export default fileService;
+

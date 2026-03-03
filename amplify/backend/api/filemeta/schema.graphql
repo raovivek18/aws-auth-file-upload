@@ -1,0 +1,19 @@
+type FileMetadata @model @auth(rules: [
+  { allow: owner },
+  { allow: public, operations: [read], provider: iam }
+]) {
+  id: ID!
+  name: String!
+  size: Int!
+  type: String!
+  key: String!
+  owner: String!
+  sharingStatus: SharingStatus!
+  shareExpiration: AWSDateTime
+  uploadTimestamp: AWSDateTime!
+}
+
+enum SharingStatus {
+  PRIVATE
+  PUBLIC
+}

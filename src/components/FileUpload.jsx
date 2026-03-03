@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import fileService from '../services/fileService';
+import ShareModal from './ShareModal';
 import './FileUpload.css';
 
 const FileUpload = () => {
@@ -10,13 +11,14 @@ const FileUpload = () => {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [loadingFiles, setLoadingFiles] = useState(true);
+    const [shareModal, setShareModal] = useState({ isOpen: false, fileKey: '' });
 
     // Fetch files on mount
     const fetchFiles = useCallback(async () => {
         if (!user?.userId) return;
         setLoadingFiles(true);
         try {
-            const items = await fileService.listFiles(user.userId);
+            const items = await fileService.listFiles();
             setFiles(items);
         } catch (err) {
             console.error(err);
@@ -51,11 +53,11 @@ const FileUpload = () => {
         }
     };
 
-    const handleDelete = async (key) => {
+    const handleDelete = async (key, id) => {
         if (!window.confirm('Are you sure you want to delete this file?')) return;
 
         try {
-            await fileService.deleteFile(key);
+            await fileService.deleteFile(key, id);
             setSuccess('File deleted successfully');
             fetchFiles();
         } catch (err) {
@@ -63,13 +65,12 @@ const FileUpload = () => {
         }
     };
 
-    const handleShare = async (key) => {
-        try {
-            const url = await fileService.generateShareLink(key);
-            window.open(url, '_blank');
-        } catch (err) {
-            setError(err.message);
-        }
+    const handleShare = (key) => {
+        setShareModal({ isOpen: true, fileKey: key });
+    };
+
+    const handleGenerateLink = async (key, expiresIn) => {
+        return await fileService.generateShareLink(key, expiresIn);
     };
 
     const formatBytes = (bytes, decimals = 2) => {
@@ -135,12 +136,17 @@ const FileUpload = () => {
                 ) : (
                     <div className="file-grid">
                         {files.map((file) => (
-                            <div key={file.key} className="file-item">
+                            <div key={file.id} className="file-item">
                                 <div className="file-info">
-                                    <span className="file-name">{file.key.split('/').pop()}</span>
-                                    <span className="file-meta">
-                                        {formatBytes(file.size)} • {file.lastModified ? new Date(file.lastModified).toLocaleDateString() : 'Unknown date'}
-                                    </span>
+                                    <span className="file-name">{file.name}</span>
+                                    <div className="file-meta">
+                                        <span>{formatBytes(file.size)}</span>
+                                        <span className="separator">•</span>
+                                        <span>{new Date(file.uploadTimestamp).toLocaleDateString()}</span>
+                                        <span className={`badge ${file.sharingStatus?.toLowerCase()}`}>
+                                            {file.sharingStatus}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div className="file-actions">
                                     <button
@@ -152,7 +158,7 @@ const FileUpload = () => {
                                     </button>
                                     <button
                                         className="btn-action delete"
-                                        onClick={() => handleDelete(file.key)}
+                                        onClick={() => handleDelete(file.key, file.id)}
                                         title="Delete"
                                     >
                                         🗑
@@ -163,6 +169,14 @@ const FileUpload = () => {
                     </div>
                 )}
             </div>
+
+
+            <ShareModal
+                isOpen={shareModal.isOpen}
+                fileKey={shareModal.fileKey}
+                onClose={() => setShareModal({ isOpen: false, fileKey: '' })}
+                onGenerate={handleGenerateLink}
+            />
         </div>
     );
 };
