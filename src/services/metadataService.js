@@ -23,7 +23,8 @@ const metadataService = {
                         shareExpiration: fileData.shareExpiration,
                         uploadTimestamp: new Date().toISOString()
                     }
-                }
+                },
+                authMode: 'userPool'
             });
             return result.data.createFileMetadata;
         } catch (error) {
@@ -38,9 +39,10 @@ const metadataService = {
     getUserFiles: async () => {
         try {
             const result = await client.graphql({
-                query: queries.listFileMetadatas
+                query: queries.listFileMetadata,
+                authMode: 'userPool'
             });
-            return result.data.listFileMetadatas.items;
+            return result.data.listFileMetadata.items;
         } catch (error) {
             console.error('Error fetching metadata:', error);
             throw error;
@@ -60,7 +62,8 @@ const metadataService = {
                         sharingStatus: status,
                         shareExpiration: expiration
                     }
-                }
+                },
+                authMode: 'userPool'
             });
             return result.data.updateFileMetadata;
         } catch (error) {
@@ -78,7 +81,8 @@ const metadataService = {
                 query: mutations.deleteFileMetadata,
                 variables: {
                     input: { id }
-                }
+                },
+                authMode: 'userPool'
             });
         } catch (error) {
             console.error('Error deleting metadata:', error);

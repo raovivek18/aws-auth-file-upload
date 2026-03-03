@@ -18,6 +18,7 @@ export const createFileMetadata = /* GraphQL */ `
       uploadTimestamp
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -38,6 +39,7 @@ export const updateFileMetadata = /* GraphQL */ `
       uploadTimestamp
       createdAt
       updatedAt
+      __typename
     }
   }
 `;
@@ -58,6 +60,67 @@ export const deleteFileMetadata = /* GraphQL */ `
       uploadTimestamp
       createdAt
       updatedAt
+      __typename
+    }
+  }
+`;
+export const createActivityLog = /* GraphQL */ `
+  mutation CreateActivityLog(
+    $input: CreateActivityLogInput!
+    $condition: ModelActivityLogConditionInput
+  ) {
+    createActivityLog(input: $input, condition: $condition) {
+      id
+      userId
+      actionType
+      timestamp
+      fileId
+      fileName
+      ip
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
+export const updateActivityLog = /* GraphQL */ `
+  mutation UpdateActivityLog(
+    $input: UpdateActivityLogInput!
+    $condition: ModelActivityLogConditionInput
+  ) {
+    updateActivityLog(input: $input, condition: $condition) {
+      id
+      userId
+      actionType
+      timestamp
+      fileId
+      fileName
+      ip
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
+export const deleteActivityLog = /* GraphQL */ `
+  mutation DeleteActivityLog(
+    $input: DeleteActivityLogInput!
+    $condition: ModelActivityLogConditionInput
+  ) {
+    deleteActivityLog(input: $input, condition: $condition) {
+      id
+      userId
+      actionType
+      timestamp
+      fileId
+      fileName
+      ip
+      createdAt
+      updatedAt
+      owner
+      __typename
     }
   }
 `;

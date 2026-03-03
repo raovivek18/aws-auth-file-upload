@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
-import NotFound from "./pages/NotFound";
+import ActivityLog from "./pages/ActivityLog";
 
 function App() {
   return (
@@ -21,7 +21,15 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="*" element={<NotFound />} />
+              <Route
+                path="/activity"
+                element={
+                  <ProtectedRoute>
+                    <ActivityLog />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </BrowserRouter>
         </AuthProvider>

@@ -1,0 +1,12 @@
+{
+  "resourceName": "s3storage",
+  "policyUUID": "ec44435c",
+  "bucketName": "amplifyauthapp529b3c5b06bd457ba7f2dacf6f3e22ab",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}

@@ -1,6 +1,6 @@
 type FileMetadata @model @auth(rules: [
   { allow: owner },
-  { allow: public, operations: [read], provider: iam }
+  { allow: public, operations: [read] }
 ]) {
   id: ID!
   name: String!
@@ -11,6 +11,18 @@ type FileMetadata @model @auth(rules: [
   sharingStatus: SharingStatus!
   shareExpiration: AWSDateTime
   uploadTimestamp: AWSDateTime!
+}
+
+type ActivityLog @model @auth(rules: [
+  { allow: owner }
+]) {
+  id: ID!
+  userId: String! @index(name: "byUser", queryField: "listLogsByUser", sortKeyFields: ["timestamp"])
+  actionType: String!
+  timestamp: AWSDateTime!
+  fileId: String
+  fileName: String
+  ip: String
 }
 
 enum SharingStatus {

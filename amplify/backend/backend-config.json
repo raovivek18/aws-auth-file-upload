@@ -1,4 +1,39 @@
 {
+  "api": {
+    "filemeta": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "amplifyauthapp1ee6923a"
+        }
+      ],
+      "output": {
+        "authConfig": {
+          "additionalAuthenticationProviders": [
+            {
+              "apiKeyConfig": {
+                "apiKeyExpirationDate": "2026-03-10T12:06:39.156Z",
+                "apiKeyExpirationDays": 7,
+                "description": "Public Read"
+              },
+              "authenticationType": "API_KEY"
+            }
+          ],
+          "defaultAuthentication": {
+            "authenticationType": "AMAZON_COGNITO_USER_POOLS",
+            "userPoolConfig": {
+              "userPoolId": "authamplifyauthapp1ee6923a"
+            }
+          }
+        }
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "AppSync"
+    }
+  },
   "auth": {
     "amplifyauthapp1ee6923a": {
       "customAuth": false,
@@ -27,25 +62,11 @@
       "service": "Cognito"
     }
   },
-  "api": {
-    "filemeta": {
-      "service": "AppSync",
+  "storage": {
+    "s3storage": {
+      "dependsOn": [],
       "providerPlugin": "awscloudformation",
-      "output": {
-        "authConfig": {
-          "defaultAuthentication": {
-            "authenticationType": "AMAZON_COGNITO_USER_POOLS",
-            "userPoolConfig": {
-              "userPoolId": "authamplifyauthapp1ee6923a"
-            }
-          },
-          "additionalAuthenticationProviders": [
-            {
-              "authenticationType": "AWS_IAM"
-            }
-          ]
-        }
-      }
+      "service": "S3"
     }
   }
 }

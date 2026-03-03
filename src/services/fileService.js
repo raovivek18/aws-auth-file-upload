@@ -1,5 +1,6 @@
-import { uploadData, list, remove, getUrl } from 'aws-amplify/storage';
+import { uploadData, remove, getUrl } from 'aws-amplify/storage';
 import metadataService from './metadataService';
+import activityService from './activityService';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
 
@@ -25,12 +26,13 @@ const fileService = {
 
         // Clean filename and add timestamp to avoid collisions
         const cleanFileName = file.name.replace(/\s+/g, '_').toLowerCase();
+        // In Amplify v6, we use specific access levels if needed, or stick to public/ prefix for shared logic
         const key = `${userId}/${Date.now()}-${cleanFileName}`;
 
         try {
-            // 1. Upload to S3
+            // 1. Upload to S3 (Defaults to public access level if not specified)
             const uploadOperation = uploadData({
-                key,
+                key, // key: 'public/' + key is implied if level is public
                 data: file,
                 options: {
                     contentType: file.type,
@@ -54,17 +56,20 @@ const fileService = {
                 sharingStatus: 'PRIVATE'
             });
 
+            // 3. Log Activity
+            await activityService.logActivity('File uploaded', metadata.id, file.name);
+
             return { key, metadata };
         } catch (error) {
             console.error('Error during file upload process:', error);
-            throw new Error(error.message || 'Failed to upload file or save metadata.');
+            // Re-throw with more detail if possible
+            const errorMsg = error.message || 'Failed to upload file or save metadata.';
+            throw new Error(errorMsg);
         }
     },
 
     /**
-     * Lists files from the Metadata service (DynamoDB) instead of S3 listing
-     * This is faster, more scalable, and provides rich metadata like sharing status.
-     * @returns {Promise<Array>} - List of file metadata
+     * Lists files from the Metadata service (DynamoDB)
      */
     listFiles: async () => {
         try {
@@ -76,25 +81,25 @@ const fileService = {
             );
         } catch (error) {
             console.error('Error listing files from metadata:', error);
-            // Fallback to S3 list if needed, but here we strictly use metadata
             throw new Error(error.message || 'Failed to fetch file list.');
         }
     },
 
     /**
      * Deletes a file from storage and its corresponding metadata
-     * @param {string} key - The S3 object key
-     * @param {string} metadataId - The DynamoDB record ID
      */
-    deleteFile: async (key, metadataId) => {
+    deleteFile: async (file) => {
         try {
             // 1. Delete from S3
-            await remove({ key });
+            await remove({ key: file.key });
 
             // 2. Delete metadata from DynamoDB
-            if (metadataId) {
-                await metadataService.deleteMetadata(metadataId);
+            if (file.id) {
+                await metadataService.deleteMetadata(file.id);
             }
+
+            // 3. Log Activity
+            await activityService.logActivity('File deleted', file.id, file.name);
         } catch (error) {
             console.error('Error deleting file or metadata:', error);
             throw new Error(error.message || 'Failed to delete file.');
@@ -103,16 +108,19 @@ const fileService = {
 
     /**
      * Toggles file privacy between PUBLIC and PRIVATE
-     * @param {Object} file - The file metadata object
-     * @returns {Promise<Object>} - Updated metadata
      */
     toggleFilePrivacy: async (file) => {
         try {
             const newStatus = file.sharingStatus === 'PRIVATE' ? 'PUBLIC' : 'PRIVATE';
-            // If making public, we might want to set a default "long" expiration or clear it
-            const expiration = newStatus === 'PUBLIC' ? null : null;
+            const expiration = null;
 
-            return await metadataService.updateSharing(file.id, newStatus, expiration);
+            const updatedMetadata = await metadataService.updateSharing(file.id, newStatus, expiration);
+
+            // Log activity
+            const action = newStatus === 'PUBLIC' ? 'Public access enabled' : 'Public access disabled';
+            await activityService.logActivity(action, file.id, file.name);
+
+            return updatedMetadata;
         } catch (error) {
             console.error('Error toggling privacy:', error);
             throw new Error('Failed to update sharing settings.');
@@ -121,19 +129,20 @@ const fileService = {
 
     /**
      * Generates a temporary pre-signed URL for sharing/viewing
-     * @param {string} key - The full key of the file
-     * @param {number} expiresIn - Expiration time in seconds
-     * @returns {Promise<string>} - The pre-signed URL
      */
-    generateShareLink: async (key, expiresIn = 3600) => {
+    generateShareLink: async (file, expiresIn = 3600) => {
         try {
             const getUrlResult = await getUrl({
-                key,
+                key: file.key,
                 options: {
                     expiresIn,
                     validateObjectExistence: true
                 }
             });
+
+            // Log activity
+            await activityService.logActivity('Share link generated', file.id, file.name);
+
             return getUrlResult.url.toString();
         } catch (error) {
             console.error('Error generating share link:', error);
@@ -143,5 +152,3 @@ const fileService = {
 };
 
 export default fileService;
-
-

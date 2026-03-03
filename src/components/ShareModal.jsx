@@ -29,7 +29,7 @@ const ShareModal = ({ isOpen, onClose, file, onGenerate }) => {
         setIsGenerating(true);
         try {
             const expiry = file.sharingStatus === 'PUBLIC' ? PUBLIC_EXPIRY : PRIVATE_EXPIRY;
-            const url = await onGenerate(file.key, expiry);
+            const url = await onGenerate(file, expiry);
             setShareUrl(url);
             setTimeLeft(expiry);
             setCopied(false);
