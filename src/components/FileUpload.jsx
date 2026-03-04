@@ -11,29 +11,96 @@ import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import '../Dashboard.css';
 
+const FileRow = React.memo(({ file, onTogglePrivacy, onShare, onDelete, getFileIcon, formatBytes }) => {
+    return (
+        <tr key={file.id}>
+            <td>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    {getFileIcon(file.type)}
+                    <span style={{ fontWeight: 600 }}>{file.name}</span>
+                </div>
+            </td>
+            <td>
+                <span className={`badge ${file.sharingStatus === 'PUBLIC' ? 'badge-public' : 'badge-private'}`}>
+                    {file.sharingStatus === 'PUBLIC' ? <Globe size={12} /> : <Shield size={12} />}
+                    {file.sharingStatus}
+                </span>
+            </td>
+            <td style={{ color: '#64748b' }}>{formatBytes(file.size)}</td>
+            <td style={{ color: '#64748b' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Clock size={14} />
+                    {format(new Date(file.uploadTimestamp), 'MMM d, h:mm a')}
+                </div>
+            </td>
+            <td>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                    <button
+                        className="btn btn-outline"
+                        style={{ padding: '6px' }}
+                        onClick={() => onTogglePrivacy(file)}
+                        title={file.sharingStatus === 'PRIVATE' ? 'Enable Public Access' : 'Disable Public Access'}
+                    >
+                        {file.sharingStatus === 'PRIVATE' ? <Shield size={16} /> : <Globe size={16} color="#059669" />}
+                    </button>
+                    <button
+                        className="btn btn-outline"
+                        style={{ padding: '6px' }}
+                        onClick={() => onShare(file)}
+                        title="Generate Share Link"
+                    >
+                        <Copy size={16} />
+                    </button>
+                    <button
+                        className="btn btn-outline"
+                        style={{ padding: '6px', color: '#dc2626', borderColor: '#fee2e2' }}
+                        onClick={() => onDelete(file)}
+                        title="Delete Forever"
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                </div>
+            </td>
+        </tr>
+    );
+});
+
 const FileUpload = ({ onStatusChange }) => {
     const { user } = useAuth();
     const [files, setFiles] = useState([]);
+    const [nextToken, setNextToken] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const [loadingFiles, setLoadingFiles] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [shareModal, setShareModal] = useState({ isOpen: false, file: null });
     const [showDeleteConfirm, setShowDeleteConfirm] = useState({ show: false, file: null });
 
-    // Fetch files on mount
-    const fetchFiles = useCallback(async () => {
+    // Fetch files (initial load)
+    const fetchFiles = useCallback(async (isInitial = true) => {
         if (!user?.userId) return;
-        setLoadingFiles(true);
-        try {
-            const items = await fileService.listFiles();
-            setFiles(items);
 
-            // Calculate stats for parent
+        if (isInitial) {
+            setLoadingFiles(true);
+            setNextToken(null);
+        } else {
+            setLoadingMore(true);
+        }
+
+        try {
+            const result = await fileService.listFiles(10, isInitial ? null : nextToken);
+
+            setFiles(prev => isInitial ? result.items : [...prev, ...result.items]);
+            setNextToken(result.nextToken);
+
+            // Update stats
             if (onStatusChange) {
-                const totalSize = items.reduce((acc, f) => acc + f.size, 0);
-                const sharedFiles = items.filter(f => f.sharingStatus === 'PUBLIC').length;
+                const currentFiles = isInitial ? result.items : [...files, ...result.items];
+                const totalSize = currentFiles.reduce((acc, f) => acc + f.size, 0);
+                const sharedFiles = currentFiles.filter(f => f.sharingStatus === 'PUBLIC').length;
                 onStatusChange({
-                    totalFiles: items.length,
+                    totalFiles: currentFiles.length,
                     totalSize,
                     sharedFiles
                 });
@@ -43,36 +110,41 @@ const FileUpload = ({ onStatusChange }) => {
             toast.error('Failed to load your vault library');
         } finally {
             setLoadingFiles(false);
+            setLoadingMore(false);
         }
-    }, [user?.userId, onStatusChange]);
+    }, [user?.userId, onStatusChange, nextToken, files]);
 
     useEffect(() => {
-        fetchFiles();
+        fetchFiles(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // Only run once on mount
+    }, [user?.userId]);
 
     const handleUpload = async (e) => {
         const selectedFile = e.target.files[0];
         if (!selectedFile) return;
 
-        const uploadId = toast.loading(`Uploading ${selectedFile.name}...`);
         setIsUploading(true);
+        setUploadProgress(0);
+        const uploadId = toast.loading(`Preparing ${selectedFile.name}...`);
 
         try {
-            await fileService.uploadFile(selectedFile, user.userId);
+            await fileService.uploadFile(selectedFile, user.userId, (progress) => {
+                setUploadProgress(progress);
+            });
             toast.success(`${selectedFile.name} added to vault`, { id: uploadId });
-            fetchFiles();
+            fetchFiles(true); // Refresh list
         } catch (err) {
             toast.error(err.message || 'Upload failed', { id: uploadId });
         } finally {
             setIsUploading(false);
+            setUploadProgress(0);
             e.target.value = '';
         }
     };
 
-    const confirmDelete = (file) => {
+    const confirmDelete = useCallback((file) => {
         setShowDeleteConfirm({ show: true, file });
-    };
+    }, []);
 
     const handleDelete = async () => {
         const file = showDeleteConfirm.file;
@@ -82,7 +154,7 @@ const FileUpload = ({ onStatusChange }) => {
         try {
             await fileService.deleteFile(file);
             toast.success('File deleted completely', { id: delId });
-            fetchFiles();
+            fetchFiles(true);
         } catch (err) {
             toast.error(err.message || 'Deletion failed', { id: delId });
         } finally {
@@ -90,39 +162,40 @@ const FileUpload = ({ onStatusChange }) => {
         }
     };
 
-    const handleTogglePrivacy = async (file) => {
+    const handleTogglePrivacy = useCallback(async (file) => {
         const toggleId = toast.loading('Updating sharing settings...');
         try {
             const updated = await fileService.toggleFilePrivacy(file);
             const status = updated.sharingStatus === 'PUBLIC' ? 'Public' : 'Private';
             toast.success(`Access changed to ${status}`, { id: toggleId });
-            fetchFiles();
+            setFiles(prev => prev.map(f => f.id === updated.id ? updated : f));
         } catch (err) {
             toast.error('Failed to change access', { id: toggleId });
         }
-    };
+    }, []);
 
     const handleGenerateLink = async (file, expiresIn) => {
         return await fileService.generateShareLink(file, expiresIn);
     };
 
-    const getFileIcon = (type) => {
+    const getFileIcon = useCallback((type) => {
         if (type.includes('image')) return <ImageIcon size={20} color="#3b82f6" />;
         if (type.includes('video')) return <Video size={20} color="#8b5cf6" />;
         if (type.includes('pdf')) return <FileText size={20} color="#ef4444" />;
         if (type.includes('javascript') || type.includes('json') || type.includes('html')) return <FileCode size={20} color="#f59e0b" />;
         return <File size={20} color="#64748b" />;
-    };
+    }, []);
 
-    const formatBytes = (bytes) => {
+    const formatBytes = useCallback((bytes) => {
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
         return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-    };
+    }, []);
 
     const filteredFiles = useMemo(() => {
+        if (!searchQuery) return files;
         return files.filter(f =>
             f.name.toLowerCase().includes(searchQuery.toLowerCase())
         );
@@ -142,17 +215,29 @@ const FileUpload = ({ onStatusChange }) => {
                     />
                 </div>
                 <div className="action-buttons" style={{ display: 'flex', gap: '0.75rem' }}>
-                    <button className="btn btn-outline" onClick={fetchFiles} disabled={loadingFiles}>
+                    <button className="btn btn-outline" onClick={() => fetchFiles(true)} disabled={loadingFiles}>
                         <RefreshCw size={18} className={loadingFiles ? 'animate-spin' : ''} />
                         Refresh
                     </button>
-                    <label className="btn btn-primary" style={{ cursor: 'pointer' }}>
+                    <label className="btn btn-primary" style={{ cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
                         <Upload size={18} />
-                        Upload File
+                        {isUploading ? `Uploading ${uploadProgress}%` : 'Upload File'}
                         <input type="file" onChange={handleUpload} hidden disabled={isUploading} />
+                        {isUploading && (
+                            <div style={{ position: 'absolute', bottom: 0, left: 0, height: '4px', background: 'rgba(255,255,255,0.4)', width: `${uploadProgress}%`, transition: 'width 0.3s ease' }} />
+                        )}
                     </label>
                 </div>
             </div>
+
+            {/* Global Progress Bar */}
+            {isUploading && (
+                <div style={{ padding: '0 1rem 1rem' }}>
+                    <div style={{ height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', background: 'linear-gradient(90deg, #6366f1, #a855f7)', width: `${uploadProgress}%`, transition: 'width 0.2s ease-out' }}></div>
+                    </div>
+                </div>
+            )}
 
             <div className="table-wrapper">
                 {loadingFiles ? (
@@ -169,70 +254,47 @@ const FileUpload = ({ onStatusChange }) => {
                         </p>
                     </div>
                 ) : (
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Status</th>
-                                <th>Size</th>
-                                <th>Uploaded At</th>
-                                <th style={{ textAlign: 'right' }}>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredFiles.map((file) => (
-                                <tr key={file.id}>
-                                    <td>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                            {getFileIcon(file.type)}
-                                            <span style={{ fontWeight: 600 }}>{file.name}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className={`badge ${file.sharingStatus === 'PUBLIC' ? 'badge-public' : 'badge-private'}`}>
-                                            {file.sharingStatus === 'PUBLIC' ? <Globe size={12} /> : <Shield size={12} />}
-                                            {file.sharingStatus}
-                                        </span>
-                                    </td>
-                                    <td style={{ color: '#64748b' }}>{formatBytes(file.size)}</td>
-                                    <td style={{ color: '#64748b' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                            <Clock size={14} />
-                                            {format(new Date(file.uploadTimestamp), 'MMM d, h:mm a')}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                                            <button
-                                                className="btn btn-outline"
-                                                style={{ padding: '6px' }}
-                                                onClick={() => handleTogglePrivacy(file)}
-                                                title={file.sharingStatus === 'PRIVATE' ? 'Enable Public Access' : 'Disable Public Access'}
-                                            >
-                                                {file.sharingStatus === 'PRIVATE' ? <Shield size={16} /> : <Globe size={16} color="#059669" />}
-                                            </button>
-                                            <button
-                                                className="btn btn-outline"
-                                                style={{ padding: '6px' }}
-                                                onClick={() => setShareModal({ isOpen: true, file })}
-                                                title="Generate Share Link"
-                                            >
-                                                <Copy size={16} />
-                                            </button>
-                                            <button
-                                                className="btn btn-outline"
-                                                style={{ padding: '6px', color: '#dc2626', borderColor: '#fee2e2' }}
-                                                onClick={() => confirmDelete(file)}
-                                                title="Delete Forever"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
+                    <>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Size</th>
+                                    <th>Uploaded At</th>
+                                    <th style={{ textAlign: 'right' }}>Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {filteredFiles.map((file) => (
+                                    <FileRow
+                                        key={file.id}
+                                        file={file}
+                                        onTogglePrivacy={handleTogglePrivacy}
+                                        onShare={(f) => setShareModal({ isOpen: true, file: f })}
+                                        onDelete={confirmDelete}
+                                        getFileIcon={getFileIcon}
+                                        formatBytes={formatBytes}
+                                    />
+                                ))}
+                            </tbody>
+                        </table>
+
+                        {nextToken && (
+                            <div style={{ padding: '1.5rem', textAlign: 'center' }}>
+                                <button
+                                    className="btn btn-outline"
+                                    onClick={() => fetchFiles(false)}
+                                    disabled={loadingMore}
+                                    style={{ margin: '0 auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                >
+                                    {loadingMore ? (
+                                        <div className="loading-spinner" style={{ width: '16px', height: '16px', border: '2px solid #e2e8f0', borderTop: '2px solid #6366f1' }}></div>
+                                    ) : 'Load More Files'}
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
 

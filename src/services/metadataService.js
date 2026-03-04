@@ -34,18 +34,47 @@ const metadataService = {
     },
 
     /**
-     * Get all file metadata for a user
+     * Get file metadata for a user with pagination support
      */
-    getUserFiles: async () => {
+    getUserFiles: async (limit = 10, nextToken = null) => {
         try {
             const result = await client.graphql({
                 query: queries.listFileMetadata,
+                variables: {
+                    limit,
+                    nextToken
+                },
                 authMode: 'userPool'
             });
-            return result.data.listFileMetadata.items;
+            return {
+                items: result.data.listFileMetadata.items,
+                nextToken: result.data.listFileMetadata.nextToken
+            };
         } catch (error) {
             console.error('Error fetching metadata:', error);
             throw error;
+        }
+    },
+
+    /**
+     * Check if a file with the same name already exists for the user
+     */
+    checkFileExists: async (name, owner) => {
+        try {
+            const result = await client.graphql({
+                query: queries.listFileMetadata,
+                variables: {
+                    filter: {
+                        name: { eq: name },
+                        owner: { eq: owner }
+                    }
+                },
+                authMode: 'userPool'
+            });
+            return result.data.listFileMetadata.items.length > 0;
+        } catch (error) {
+            console.error('Error checking file existence:', error);
+            return false;
         }
     },
 

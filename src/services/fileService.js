@@ -2,7 +2,7 @@ import { uploadData, remove, getUrl } from 'aws-amplify/storage';
 import metadataService from './metadataService';
 import activityService from './activityService';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // Increased to 100MB for testing, Amplify handles larger via multipart
 
 /**
  * Service for handling file operations with AWS Amplify Storage (v6+)
@@ -13,32 +13,39 @@ const fileService = {
      * Uploads a file to S3 and saves its metadata to DynamoDB
      * @param {File} file - The file object to upload
      * @param {string} userId - The unique ID of the user
+     * @param {Function} onProgress - Optional callback for upload progress
      * @returns {Promise<Object>} - The result containing S3 key and metadata
      */
-    uploadFile: async (file, userId) => {
+    uploadFile: async (file, userId, onProgress) => {
         if (!file) {
             throw new Error('Please select a file to upload.');
         }
 
         if (file.size > MAX_FILE_SIZE) {
-            throw new Error(`File size exceeds the 10MB limit. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`);
+            throw new Error(`File size exceeds the limit. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`);
         }
 
-        // Clean filename and add timestamp to avoid collisions
-        const cleanFileName = file.name.replace(/\s+/g, '_').toLowerCase();
-        // In Amplify v6, we use specific access levels if needed, or stick to public/ prefix for shared logic
+        // 0. Check for duplicates
+        const exists = await metadataService.checkFileExists(file.name, userId);
+        if (exists) {
+            throw new Error(`A file named "${file.name}" already exists in your vault.`);
+        }
+
+        // Clean filename but keep it recognizable
+        const cleanFileName = file.name.replace(/\s+/g, '_');
         const key = `${userId}/${Date.now()}-${cleanFileName}`;
 
         try {
-            // 1. Upload to S3 (Defaults to public access level if not specified)
+            // 1. Upload to S3 with progress tracking
             const uploadOperation = uploadData({
-                key, // key: 'public/' + key is implied if level is public
+                key,
                 data: file,
                 options: {
                     contentType: file.type,
-                    onProgress: ({ transferredBytes, totalBytes }) => {
-                        if (totalBytes) {
-                            console.log(`Upload progress: ${Math.round((transferredBytes / totalBytes) * 100)}%`);
+                    onProgress: (progress) => {
+                        if (onProgress && progress.totalBytes) {
+                            const percent = Math.round((progress.transferredBytes / progress.totalBytes) * 100);
+                            onProgress(percent);
                         }
                     },
                 }
@@ -62,23 +69,24 @@ const fileService = {
             return { key, metadata };
         } catch (error) {
             console.error('Error during file upload process:', error);
-            // Re-throw with more detail if possible
-            const errorMsg = error.message || 'Failed to upload file or save metadata.';
+            const errorMsg = error.message || 'Failed to upload file.';
             throw new Error(errorMsg);
         }
     },
 
     /**
-     * Lists files from the Metadata service (DynamoDB)
+     * Lists files from the Metadata service (DynamoDB) with pagination
      */
-    listFiles: async () => {
+    listFiles: async (limit = 10, nextToken = null) => {
         try {
-            const items = await metadataService.getUserFiles();
+            const { items, nextToken: newNextToken } = await metadataService.getUserFiles(limit, nextToken);
 
             // Sort by upload timestamp (newest first)
-            return items.sort((a, b) =>
+            const sortedItems = items.sort((a, b) =>
                 new Date(b.uploadTimestamp) - new Date(a.uploadTimestamp)
             );
+
+            return { items: sortedItems, nextToken: newNextToken };
         } catch (error) {
             console.error('Error listing files from metadata:', error);
             throw new Error(error.message || 'Failed to fetch file list.');
