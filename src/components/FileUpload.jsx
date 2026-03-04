@@ -71,7 +71,7 @@ const FileUpload = ({ onStatusChange }) => {
     const [nextToken, setNextToken] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
-    const [loadingFiles, setLoadingFiles] = useState(true);
+    const [loadingFiles, setLoadingFiles] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [shareModal, setShareModal] = useState({ isOpen: false, file: null });
@@ -79,7 +79,10 @@ const FileUpload = ({ onStatusChange }) => {
 
     // Fetch files (initial load)
     const fetchFiles = useCallback(async (isInitial = true) => {
-        if (!user?.userId) return;
+        if (!user?.userId) {
+            setLoadingFiles(false);
+            return;
+        }
 
         if (isInitial) {
             setLoadingFiles(true);
@@ -114,12 +117,11 @@ const FileUpload = ({ onStatusChange }) => {
         }
     }, [user?.userId, onStatusChange, nextToken, files]);
 
-    // Removal of automatic mount fetch as requested - user must now click Refresh manually.
-    /* 
     useEffect(() => {
-        fetchFiles(true);
-    }, [user?.userId]); 
-    */
+        if (user?.userId) {
+            fetchFiles(true);
+        }
+    }, [user?.userId, fetchFiles]);
 
     const handleUpload = async (e) => {
         const selectedFile = e.target.files[0];
