@@ -4,14 +4,15 @@ import fileService from '../services/fileService';
 import ShareModal from './ShareModal';
 import {
     Search, Upload, RefreshCw, Trash2, Shield, Globe,
-    Copy, Image as ImageIcon,
-    Video, FileCode, File, Clock, AlertTriangle, FileText
+    Copy, Image as ImageIcon, Edit3, Eye, ArrowUp, ArrowDown,
+    Video, FileCode, File, Clock, AlertTriangle, FileText, ChevronUp, ChevronDown
 } from 'lucide-react';
+import FilePreviewModal from './FilePreviewModal';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import '../Dashboard.css';
 
-const FileRow = React.memo(({ file, onTogglePrivacy, onShare, onDelete, getFileIcon, formatBytes }) => {
+const FileRow = React.memo(({ file, onTogglePrivacy, onShare, onDelete, onRename, onPreview, getFileIcon, formatBytes }) => {
     return (
         <tr key={file.id}>
             <td>
@@ -35,6 +36,22 @@ const FileRow = React.memo(({ file, onTogglePrivacy, onShare, onDelete, getFileI
             </td>
             <td>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                    <button
+                        className="btn btn-outline"
+                        style={{ padding: '6px' }}
+                        onClick={() => onPreview(file)}
+                        title="Preview"
+                    >
+                        <Eye size={16} color="#6366f1" />
+                    </button>
+                    <button
+                        className="btn btn-outline"
+                        style={{ padding: '6px' }}
+                        onClick={() => onRename(file)}
+                        title="Rename"
+                    >
+                        <Edit3 size={16} color="#0d9488" />
+                    </button>
                     <button
                         className="btn btn-outline"
                         style={{ padding: '6px' }}
@@ -75,53 +92,75 @@ const FileUpload = ({ onStatusChange }) => {
     const [loadingMore, setLoadingMore] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [shareModal, setShareModal] = useState({ isOpen: false, file: null });
+    const [renameModal, setRenameModal] = useState({ isOpen: false, file: null, newName: '' });
+    const [previewModal, setPreviewModal] = useState({ isOpen: false, file: null });
     const [showDeleteConfirm, setShowDeleteConfirm] = useState({ show: false, file: null });
+    const [sortConfig, setSortConfig] = useState({ key: 'uploadTimestamp', direction: 'desc' });
+
+    // Use a ref to track if a fetch is currently in progress to avoid double-triggers
+    const isFetchingRef = React.useRef(false);
 
     // Fetch files (initial load)
     const fetchFiles = useCallback(async (isInitial = true) => {
-        if (!user?.userId) {
-            setLoadingFiles(false);
-            return;
-        }
+        if (!user?.userId || isFetchingRef.current) return;
 
         if (isInitial) {
             setLoadingFiles(true);
-            setNextToken(null);
         } else {
             setLoadingMore(true);
         }
 
+        isFetchingRef.current = true;
+
         try {
-            const result = await fileService.listFiles(10, isInitial ? null : nextToken);
+            // Get current nextToken from state inside the block for "Load More"
+            // If isInitial is true, we pass null. If false, we use the current nextToken state.
+            // Since we can't easily get nextToken here without making it a dependency, 
+            // we'll pass it as an argument or just keep it as a dependency but be careful.
+            // Actually, for "Load More" to work, fetchFiles DOES depend on nextToken.
+            const currentToken = isInitial ? null : nextToken;
+            const result = await fileService.listFiles(10, currentToken);
 
             setFiles(prev => isInitial ? result.items : [...prev, ...result.items]);
             setNextToken(result.nextToken);
-
-            // Update stats
-            if (onStatusChange) {
-                const currentFiles = isInitial ? result.items : [...files, ...result.items];
-                const totalSize = currentFiles.reduce((acc, f) => acc + f.size, 0);
-                const sharedFiles = currentFiles.filter(f => f.sharingStatus === 'PUBLIC').length;
-                onStatusChange({
-                    totalFiles: currentFiles.length,
-                    totalSize,
-                    sharedFiles
-                });
-            }
         } catch (err) {
             console.error(err);
             toast.error('Failed to load your vault library');
         } finally {
             setLoadingFiles(false);
             setLoadingMore(false);
+            isFetchingRef.current = false;
         }
-    }, [user?.userId, onStatusChange, nextToken, files]);
+    }, [user?.userId, nextToken]);
 
+    // Handle Stats Updates separately to avoid circular dependency in fetchFiles
     useEffect(() => {
-        if (user?.userId) {
-            fetchFiles(true);
+        if (onStatusChange && !loadingFiles) {
+            const totalSize = files.reduce((acc, f) => acc + f.size, 0);
+            const sharedFiles = files.filter(f => f.sharingStatus === 'PUBLIC').length;
+            onStatusChange({
+                totalFiles: files.length,
+                totalSize,
+                sharedFiles
+            });
         }
-    }, [user?.userId, fetchFiles]);
+    }, [files, onStatusChange, loadingFiles]);
+
+    // Initial fetch on mount or when user changes
+    useEffect(() => {
+        let isMounted = true;
+        if (user?.userId && isMounted) {
+            // We use a small timeout to ensure the component is fully ready
+            // and avoid double-triggering during React StrictMode mount
+            const timer = setTimeout(() => {
+                fetchFiles(true);
+            }, 100);
+            return () => {
+                isMounted = false;
+                clearTimeout(timer);
+            };
+        }
+    }, [user?.userId]); // Removed fetchFiles from dependencies to prevent re-triggering loop
 
     const handleUpload = async (e) => {
         const selectedFile = e.target.files[0];
@@ -183,6 +222,20 @@ const FileUpload = ({ onStatusChange }) => {
         return await fileService.generateShareLink(file, user.userId, expiresIn);
     };
 
+    const handleRename = async () => {
+        if (!renameModal.file || !renameModal.newName.trim() || !user?.userId) return;
+
+        const renameId = toast.loading(`Renaming to ${renameModal.newName}...`);
+        try {
+            const updated = await fileService.renameFile(renameModal.file, renameModal.newName, user.userId);
+            setFiles(prev => prev.map(f => f.id === updated.id ? { ...f, name: updated.name } : f));
+            toast.success('File renamed successfully', { id: renameId });
+            setRenameModal({ isOpen: false, file: null, newName: '' });
+        } catch (err) {
+            toast.error(err.message || 'Rename failed', { id: renameId });
+        }
+    };
+
     const getFileIcon = useCallback((type) => {
         if (type.includes('image')) return <ImageIcon size={20} color="#3b82f6" />;
         if (type.includes('video')) return <Video size={20} color="#8b5cf6" />;
@@ -200,11 +253,45 @@ const FileUpload = ({ onStatusChange }) => {
     }, []);
 
     const filteredFiles = useMemo(() => {
-        if (!searchQuery) return files;
-        return files.filter(f =>
-            f.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }, [files, searchQuery]);
+        let processed = [...files];
+
+        // 1. Filter
+        if (searchQuery) {
+            processed = processed.filter(f =>
+                f.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+
+        // 2. Sort
+        processed.sort((a, b) => {
+            let valA = a[sortConfig.key];
+            let valB = b[sortConfig.key];
+
+            if (sortConfig.key === 'uploadTimestamp') {
+                valA = new Date(valA);
+                valB = new Date(valB);
+            }
+
+            if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        return processed;
+    }, [files, searchQuery, sortConfig]);
+
+    const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const SortIndicator = ({ column }) => {
+        if (sortConfig.key !== column) return <ChevronDown size={14} style={{ opacity: 0.3 }} />;
+        return sortConfig.direction === 'asc' ? <ChevronUp size={14} color="#6366f1" /> : <ChevronDown size={14} color="#6366f1" />;
+    };
 
     return (
         <div className="file-system-container">
@@ -263,10 +350,26 @@ const FileUpload = ({ onStatusChange }) => {
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Status</th>
-                                    <th>Size</th>
-                                    <th>Uploaded At</th>
+                                    <th onClick={() => requestSort('name')} style={{ cursor: 'pointer' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            Name <SortIndicator column="name" />
+                                        </div>
+                                    </th>
+                                    <th onClick={() => requestSort('sharingStatus')} style={{ cursor: 'pointer' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            Status <SortIndicator column="sharingStatus" />
+                                        </div>
+                                    </th>
+                                    <th onClick={() => requestSort('size')} style={{ cursor: 'pointer' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            Size <SortIndicator column="size" />
+                                        </div>
+                                    </th>
+                                    <th onClick={() => requestSort('uploadTimestamp')} style={{ cursor: 'pointer' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            Uploaded At <SortIndicator column="uploadTimestamp" />
+                                        </div>
+                                    </th>
                                     <th style={{ textAlign: 'right' }}>Actions</th>
                                 </tr>
                             </thead>
@@ -278,6 +381,8 @@ const FileUpload = ({ onStatusChange }) => {
                                         onTogglePrivacy={handleTogglePrivacy}
                                         onShare={(f) => setShareModal({ isOpen: true, file: f })}
                                         onDelete={confirmDelete}
+                                        onRename={(f) => setRenameModal({ isOpen: true, file: f, newName: f.name })}
+                                        onPreview={(f) => setPreviewModal({ isOpen: true, file: f })}
                                         getFileIcon={getFileIcon}
                                         formatBytes={formatBytes}
                                     />
@@ -302,6 +407,34 @@ const FileUpload = ({ onStatusChange }) => {
                     </>
                 )}
             </div>
+
+            {/* Rename Modal */}
+            {renameModal.isOpen && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+                    <div className="stat-card" style={{ width: '400px', padding: '2rem', animation: 'fadeIn 0.2s ease-out' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                            <Edit3 size={24} color="#0d9488" />
+                            <h3 style={{ margin: 0 }}>Rename File</h3>
+                        </div>
+                        <div className="input-field" style={{ marginBottom: '2rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>File Name</label>
+                            <input
+                                type="text"
+                                className="search-input"
+                                style={{ position: 'relative', width: '100%', paddingLeft: '1rem' }}
+                                value={renameModal.newName}
+                                onChange={(e) => setRenameModal(prev => ({ ...prev, newName: e.target.value }))}
+                                autoFocus
+                                onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                            <button className="btn btn-outline" onClick={() => setRenameModal({ isOpen: false, file: null, newName: '' })}>Cancel</button>
+                            <button className="btn btn-primary" onClick={handleRename}>Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Custom Delete Confirmation Modal */}
             {showDeleteConfirm.show && (
@@ -329,9 +462,18 @@ const FileUpload = ({ onStatusChange }) => {
                 onGenerate={handleGenerateLink}
             />
 
+            <FilePreviewModal
+                isOpen={previewModal.isOpen}
+                file={previewModal.file}
+                onClose={() => setPreviewModal({ isOpen: false, file: null })}
+                getUrl={handleGenerateLink}
+            />
+
             <style>{`
                 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
                 .animate-spin { animation: spin 1s linear infinite; }
+                .preview-modal { max-width: 900px !important; }
+                th:hover { background: #f8fafc; }
             `}</style>
         </div>
     );

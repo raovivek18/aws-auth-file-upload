@@ -102,6 +102,28 @@ const metadataService = {
     },
 
     /**
+     * Update file name (Renaming)
+     */
+    renameMetadata: async (id, newName) => {
+        try {
+            const result = await client.graphql({
+                query: mutations.updateFileMetadata,
+                variables: {
+                    input: {
+                        id,
+                        name: newName
+                    }
+                },
+                authMode: 'userPool'
+            });
+            return result.data.updateFileMetadata;
+        } catch (error) {
+            console.error('Error renaming metadata:', error);
+            throw error;
+        }
+    },
+
+    /**
      * Delete metadata
      */
     deleteMetadata: async (id) => {

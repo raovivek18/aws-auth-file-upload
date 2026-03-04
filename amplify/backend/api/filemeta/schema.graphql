@@ -7,7 +7,7 @@ type FileMetadata @model @auth(rules: [
   size: Int!
   type: String!
   key: String!
-  owner: String!
+  owner: String! @index(name: "byOwner", queryField: "listFileMetadataByOwner", sortKeyFields: ["uploadTimestamp"])
   sharingStatus: SharingStatus!
   shareExpiration: AWSDateTime
   uploadTimestamp: AWSDateTime!

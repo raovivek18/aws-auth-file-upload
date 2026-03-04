@@ -181,6 +181,32 @@ const fileService = {
             console.error('Error generating share link:', error);
             throw new Error('Failed to generate share link.');
         }
+    },
+
+    /**
+     * Renames a file's metadata display name
+     */
+    renameFile: async (file, newName, currentUserId) => {
+        // Security Check: Ensure only owner can rename
+        if (file.owner !== currentUserId) {
+            throw new Error('Authorization failed: You do not own this file.');
+        }
+
+        if (!newName || newName.trim() === '') {
+            throw new Error('File name cannot be empty.');
+        }
+
+        try {
+            const updatedMetadata = await metadataService.renameMetadata(file.id, newName.trim());
+
+            // Log activity
+            await activityService.logActivity('File renamed', file.id, `From: ${file.name} To: ${newName}`);
+
+            return updatedMetadata;
+        } catch (error) {
+            console.error('Error renaming file:', error);
+            throw new Error('Failed to rename file.');
+        }
     }
 };
 
