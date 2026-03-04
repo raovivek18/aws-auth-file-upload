@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import './ShareModal.css';
 
 const ShareModal = ({ isOpen, onClose, file, onGenerate }) => {
@@ -35,6 +36,7 @@ const ShareModal = ({ isOpen, onClose, file, onGenerate }) => {
             setCopied(false);
         } catch (err) {
             console.error(err);
+            toast.error(err.message || 'Failed to generate link');
         } finally {
             setIsGenerating(false);
         }

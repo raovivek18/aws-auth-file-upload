@@ -122,3 +122,39 @@ export const listFileMetadata = /* GraphQL */ `
     }
   }
 `;
+export const listFileMetadataByOwner = /* GraphQL */ `
+  query ListFileMetadataByOwner(
+    $owner: String!
+    $uploadTimestamp: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelFileMetadataFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listFileMetadataByOwner(
+      owner: $owner
+      uploadTimestamp: $uploadTimestamp
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        name
+        size
+        type
+        key
+        owner
+        sharingStatus
+        shareExpiration
+        uploadTimestamp
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;

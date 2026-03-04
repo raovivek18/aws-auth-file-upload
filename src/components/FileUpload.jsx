@@ -8,6 +8,7 @@ import {
     Video, FileCode, File, Clock, AlertTriangle, FileText, ChevronUp, ChevronDown
 } from 'lucide-react';
 import FilePreviewModal from './FilePreviewModal';
+import logger from '../services/loggerService';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import '../Dashboard.css';
@@ -119,12 +120,12 @@ const FileUpload = ({ onStatusChange }) => {
             // we'll pass it as an argument or just keep it as a dependency but be careful.
             // Actually, for "Load More" to work, fetchFiles DOES depend on nextToken.
             const currentToken = isInitial ? null : nextToken;
-            const result = await fileService.listFiles(10, currentToken);
+            const result = await fileService.listFiles(user.userId, 10, currentToken);
 
             setFiles(prev => isInitial ? result.items : [...prev, ...result.items]);
             setNextToken(result.nextToken);
         } catch (err) {
-            console.error(err);
+            logger.error('Failed to load vault library', { error: err, userId: user.userId });
             toast.error('Failed to load your vault library');
         } finally {
             setLoadingFiles(false);
@@ -177,6 +178,7 @@ const FileUpload = ({ onStatusChange }) => {
             toast.success(`${selectedFile.name} uploaded successfully. Click Refresh to update your list.`, { id: uploadId });
             // Automatic fetch removed per user request
         } catch (err) {
+            logger.error('Upload failed', { error: err, fileName: selectedFile.name });
             toast.error(err.message || 'Upload failed', { id: uploadId });
         } finally {
             setIsUploading(false);

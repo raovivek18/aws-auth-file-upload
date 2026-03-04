@@ -36,19 +36,21 @@ const metadataService = {
     /**
      * Get file metadata for a user with pagination support
      */
-    getUserFiles: async (limit = 10, nextToken = null) => {
+    getUserFiles: async (owner, limit = 10, nextToken = null) => {
         try {
             const result = await client.graphql({
-                query: queries.listFileMetadata,
+                query: queries.listFileMetadataByOwner,
                 variables: {
+                    owner,
                     limit,
-                    nextToken
+                    nextToken,
+                    sortDirection: 'DESC' // Latest first
                 },
                 authMode: 'userPool'
             });
             return {
-                items: result.data.listFileMetadata.items,
-                nextToken: result.data.listFileMetadata.nextToken
+                items: result.data.listFileMetadataByOwner.items,
+                nextToken: result.data.listFileMetadataByOwner.nextToken
             };
         } catch (error) {
             console.error('Error fetching metadata:', error);
@@ -62,16 +64,16 @@ const metadataService = {
     checkFileExists: async (name, owner) => {
         try {
             const result = await client.graphql({
-                query: queries.listFileMetadata,
+                query: queries.listFileMetadataByOwner,
                 variables: {
+                    owner,
                     filter: {
-                        name: { eq: name },
-                        owner: { eq: owner }
+                        name: { eq: name }
                     }
                 },
                 authMode: 'userPool'
             });
-            return result.data.listFileMetadata.items.length > 0;
+            return result.data.listFileMetadataByOwner.items.length > 0;
         } catch (error) {
             console.error('Error checking file existence:', error);
             return false;
