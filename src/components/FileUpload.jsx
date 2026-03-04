@@ -114,10 +114,12 @@ const FileUpload = ({ onStatusChange }) => {
         }
     }, [user?.userId, onStatusChange, nextToken, files]);
 
+    // Removal of automatic mount fetch as requested - user must now click Refresh manually.
+    /* 
     useEffect(() => {
         fetchFiles(true);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.userId]);
+    }, [user?.userId]); 
+    */
 
     const handleUpload = async (e) => {
         const selectedFile = e.target.files[0];
@@ -131,8 +133,8 @@ const FileUpload = ({ onStatusChange }) => {
             await fileService.uploadFile(selectedFile, user.userId, (progress) => {
                 setUploadProgress(progress);
             });
-            toast.success(`${selectedFile.name} added to vault`, { id: uploadId });
-            fetchFiles(true); // Refresh list
+            toast.success(`${selectedFile.name} uploaded successfully. Click Refresh to update your list.`, { id: uploadId });
+            // Automatic fetch removed per user request
         } catch (err) {
             toast.error(err.message || 'Upload failed', { id: uploadId });
         } finally {
@@ -148,13 +150,12 @@ const FileUpload = ({ onStatusChange }) => {
 
     const handleDelete = async () => {
         const file = showDeleteConfirm.file;
-        if (!file) return;
+        if (!file || !user?.userId) return;
 
         const delId = toast.loading(`Deleting ${file.name}...`);
         try {
-            await fileService.deleteFile(file);
-            toast.success('File deleted completely', { id: delId });
-            fetchFiles(true);
+            await fileService.deleteFile(file, user.userId);
+            toast.success('File deleted. Click Refresh to update your list.', { id: delId });
         } catch (err) {
             toast.error(err.message || 'Deletion failed', { id: delId });
         } finally {
@@ -163,19 +164,21 @@ const FileUpload = ({ onStatusChange }) => {
     };
 
     const handleTogglePrivacy = useCallback(async (file) => {
+        if (!user?.userId) return;
         const toggleId = toast.loading('Updating sharing settings...');
         try {
-            const updated = await fileService.toggleFilePrivacy(file);
+            const updated = await fileService.toggleFilePrivacy(file, user.userId);
             const status = updated.sharingStatus === 'PUBLIC' ? 'Public' : 'Private';
             toast.success(`Access changed to ${status}`, { id: toggleId });
             setFiles(prev => prev.map(f => f.id === updated.id ? updated : f));
         } catch (err) {
-            toast.error('Failed to change access', { id: toggleId });
+            toast.error(err.message || 'Failed to change access', { id: toggleId });
         }
-    }, []);
+    }, [user?.userId]);
 
     const handleGenerateLink = async (file, expiresIn) => {
-        return await fileService.generateShareLink(file, expiresIn);
+        if (!user?.userId) return;
+        return await fileService.generateShareLink(file, user.userId, expiresIn);
     };
 
     const getFileIcon = useCallback((type) => {

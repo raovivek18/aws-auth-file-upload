@@ -8,17 +8,23 @@
     "autoVerifiedAttributes": [
       "email"
     ],
-    "mfaConfiguration": "OFF",
+    "mfaConfiguration": "OPTIONAL",
     "mfaTypes": [
-      "SMS Text Message"
+      "SMS Text Message",
+      "TOTP"
     ],
     "smsAuthenticationMessage": "Your authentication code is {####}",
     "smsVerificationMessage": "Your verification code is {####}",
     "emailVerificationSubject": "Your verification code",
     "emailVerificationMessage": "Your verification code is {####}",
-    "defaultPasswordPolicy": false,
-    "passwordPolicyMinLength": 8,
-    "passwordPolicyCharacters": [],
+    "defaultPasswordPolicy": true,
+    "passwordPolicyMinLength": 12,
+    "passwordPolicyCharacters": [
+      "Requires Lowercase",
+      "Requires Numbers",
+      "Requires Symbols",
+      "Requires Uppercase"
+    ],
     "requiredAttributes": [
       "email"
     ],
