@@ -198,3 +198,86 @@ export const listUserAnalytics = /* GraphQL */ `
     }
   }
 `;
+export const getSharedFile = /* GraphQL */ `
+  query GetSharedFile($id: ID!) {
+    getSharedFile(id: $id) {
+      id
+      fileId
+      sharedWith
+      ownerId
+      ownerEmail
+      fileName
+      fileKey
+      fileSize
+      fileType
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
+export const listSharedFiles = /* GraphQL */ `
+  query ListSharedFiles(
+    $filter: ModelSharedFileFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listSharedFiles(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        fileId
+        sharedWith
+        ownerId
+        ownerEmail
+        fileName
+        fileKey
+        fileSize
+        fileType
+        createdAt
+        updatedAt
+        owner
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const listSharedWithMe = /* GraphQL */ `
+  query ListSharedWithMe(
+    $sharedWith: String!
+    $createdAt: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelSharedFileFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listSharedWithMe(
+      sharedWith: $sharedWith
+      createdAt: $createdAt
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        fileId
+        sharedWith
+        ownerId
+        ownerEmail
+        fileName
+        fileKey
+        fileSize
+        fileType
+        createdAt
+        updatedAt
+        owner
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;

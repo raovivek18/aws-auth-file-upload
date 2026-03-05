@@ -40,3 +40,19 @@ type UserAnalytics @model @auth(rules: [
   storageLimit: AWSInt! # Optional: for quota tracking
   lastActive: AWSDateTime!
 }
+
+type SharedFile @model @auth(rules: [
+  { allow: owner }, # The sharer is the creator/owner
+  { allow: owner, ownerField: "sharedWith", operations: [read] } # The recipient has read access
+]) {
+  id: ID!
+  fileId: ID! @index(name: "byFile")
+  sharedWith: String! @index(name: "byRecipient", queryField: "listSharedWithMe", sortKeyFields: ["createdAt"]) # recipient email
+  ownerId: String!
+  ownerEmail: String
+  fileName: String!
+  fileKey: String!
+  fileSize: Int
+  fileType: String
+  createdAt: AWSDateTime!
+}

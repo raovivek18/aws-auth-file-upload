@@ -5,6 +5,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import ActivityLog from "./pages/ActivityLog";
 import Analytics from "./pages/Analytics";
+import SharedWithMe from "./pages/SharedWithMe";
 import { initAuthLogger } from "./services/authLogger";
 
 // Initialize system logging listeners
@@ -23,6 +24,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/shared"
+                element={
+                  <ProtectedRoute>
+                    <SharedWithMe />
                   </ProtectedRoute>
                 }
               />

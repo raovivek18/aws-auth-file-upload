@@ -181,3 +181,47 @@ export const deleteUserAnalytics = /* GraphQL */ `
     }
   }
 `;
+export const createSharedFile = /* GraphQL */ `
+  mutation CreateSharedFile(
+    $input: CreateSharedFileInput!
+    $condition: ModelSharedFileConditionInput
+  ) {
+    createSharedFile(input: $input, condition: $condition) {
+      id
+      fileId
+      sharedWith
+      ownerId
+      ownerEmail
+      fileName
+      fileKey
+      fileSize
+      fileType
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
+export const deleteSharedFile = /* GraphQL */ `
+  mutation DeleteSharedFile(
+    $input: DeleteSharedFileInput!
+    $condition: ModelSharedFileConditionInput
+  ) {
+    deleteSharedFile(input: $input, condition: $condition) {
+      id
+      fileId
+      sharedWith
+      ownerId
+      ownerEmail
+      fileName
+      fileKey
+      fileSize
+      fileType
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
