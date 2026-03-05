@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import MainLayout from '../layout/MainLayout';
 import analyticsService from '../services/analyticsService';
-import { BarChart3, PieChart, TrendingUp, Activity, RefreshCw, FileText, Share2, Database } from 'lucide-react';
+import { BarChart3, PieChart, TrendingUp, Activity, RefreshCw, FileText, Share2, Database, Shield } from 'lucide-react';
 import logger from '../services/loggerService';
 import toast from 'react-hot-toast';
 
