@@ -4,6 +4,7 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import ActivityLog from "./pages/ActivityLog";
+import Analytics from "./pages/Analytics";
 import { initAuthLogger } from "./services/authLogger";
 
 // Initialize system logging listeners
@@ -30,6 +31,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <ActivityLog />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/analytics"
+                element={
+                  <ProtectedRoute>
+                    <Analytics />
                   </ProtectedRoute>
                 }
               />

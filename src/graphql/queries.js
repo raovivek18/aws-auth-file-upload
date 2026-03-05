@@ -158,3 +158,43 @@ export const listFileMetadataByOwner = /* GraphQL */ `
     }
   }
 `;
+export const getUserAnalytics = /* GraphQL */ `
+  query GetUserAnalytics($id: ID!) {
+    getUserAnalytics(id: $id) {
+      id
+      totalFiles
+      totalStorage
+      totalShares
+      storageLimit
+      lastActive
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
+export const listUserAnalytics = /* GraphQL */ `
+  query ListUserAnalytics(
+    $filter: ModelUserAnalyticsFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listUserAnalytics(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        totalFiles
+        totalStorage
+        totalShares
+        storageLimit
+        lastActive
+        createdAt
+        updatedAt
+        owner
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;

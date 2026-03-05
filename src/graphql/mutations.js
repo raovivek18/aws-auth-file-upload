@@ -124,3 +124,60 @@ export const deleteActivityLog = /* GraphQL */ `
     }
   }
 `;
+export const createUserAnalytics = /* GraphQL */ `
+  mutation CreateUserAnalytics(
+    $input: CreateUserAnalyticsInput!
+    $condition: ModelUserAnalyticsConditionInput
+  ) {
+    createUserAnalytics(input: $input, condition: $condition) {
+      id
+      totalFiles
+      totalStorage
+      totalShares
+      storageLimit
+      lastActive
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
+export const updateUserAnalytics = /* GraphQL */ `
+  mutation UpdateUserAnalytics(
+    $input: UpdateUserAnalyticsInput!
+    $condition: ModelUserAnalyticsConditionInput
+  ) {
+    updateUserAnalytics(input: $input, condition: $condition) {
+      id
+      totalFiles
+      totalStorage
+      totalShares
+      storageLimit
+      lastActive
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;
+export const deleteUserAnalytics = /* GraphQL */ `
+  mutation DeleteUserAnalytics(
+    $input: DeleteUserAnalyticsInput!
+    $condition: ModelUserAnalyticsConditionInput
+  ) {
+    deleteUserAnalytics(input: $input, condition: $condition) {
+      id
+      totalFiles
+      totalStorage
+      totalShares
+      storageLimit
+      lastActive
+      createdAt
+      updatedAt
+      owner
+      __typename
+    }
+  }
+`;

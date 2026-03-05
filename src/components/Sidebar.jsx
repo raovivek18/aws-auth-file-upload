@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, History, Shield, LogOut, Share2 } from 'lucide-react';
+import { LayoutDashboard, History, Shield, LogOut, Share2, BarChart3 } from 'lucide-react';
 import { signOut } from 'aws-amplify/auth';
 import '../Dashboard.css';
 
@@ -36,6 +36,14 @@ const Sidebar = () => {
                 >
                     <History size={20} />
                     <span>Activity Log</span>
+                </NavLink>
+
+                <NavLink
+                    to="/analytics"
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                >
+                    <BarChart3 size={20} />
+                    <span>Analytics</span>
                 </NavLink>
 
                 <NavLink

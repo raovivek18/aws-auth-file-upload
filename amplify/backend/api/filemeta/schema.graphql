@@ -29,3 +29,14 @@ enum SharingStatus {
   PRIVATE
   PUBLIC
 }
+
+type UserAnalytics @model @auth(rules: [
+  { allow: owner }
+]) {
+  id: ID! # userId (sub)
+  totalFiles: Int!
+  totalStorage: AWSInt! # Total bytes used
+  totalShares: Int!
+  storageLimit: AWSInt! # Optional: for quota tracking
+  lastActive: AWSDateTime!
+}

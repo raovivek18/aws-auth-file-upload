@@ -1,6 +1,7 @@
 import { uploadData, remove, getUrl } from 'aws-amplify/storage';
 import metadataService from './metadataService';
 import activityService from './activityService';
+import analyticsService from './analyticsService';
 import logger from './loggerService';
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB limit for security
@@ -79,6 +80,9 @@ const fileService = {
             // 6. Log Activity
             await activityService.logActivity('File uploaded', metadata.id, file.name);
 
+            // 7. Record Analytics
+            await analyticsService.recordUpload(file.size);
+
             return { key: s3Key, metadata };
         } catch (error) {
             logger.error(error, {
@@ -122,6 +126,9 @@ const fileService = {
             }
 
             await activityService.logActivity('File deleted', file.id, file.name);
+
+            // 3. Record Analytics
+            await analyticsService.recordDeletion(file.size);
         } catch (error) {
             logger.error(error, {
                 action: 'file_delete_failure',
@@ -178,6 +185,9 @@ const fileService = {
             }
 
             await activityService.logActivity('Share link generated', file.id, file.name);
+
+            // Record Analytics
+            await analyticsService.recordShare();
             return getUrlResult.url.toString();
         } catch (error) {
             logger.error('Error generating share link:', {
