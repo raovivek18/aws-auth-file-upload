@@ -76,8 +76,16 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <div className="data-table-container" style={{ marginTop: '2.5rem' }}>
-                <FileUpload onStatusChange={updateStats} />
+            <div className="data-table-container" style={{ marginTop: '3.5rem', background: 'transparent', border: 'none', boxShadow: 'none' }}>
+                <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <div>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Vault Library</h2>
+                        <p style={{ color: '#64748b', margin: 0 }}>Manage your encrypted documents and sharing permissions.</p>
+                    </div>
+                </div>
+                <div style={{ background: 'white', borderRadius: '1rem', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
+                    <FileUpload onStatusChange={updateStats} />
+                </div>
             </div>
         </MainLayout>
     );

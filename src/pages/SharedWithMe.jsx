@@ -6,6 +6,16 @@ import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import logger from '../services/loggerService';
 
+const SkeletonRow = () => (
+    <tr>
+        {Array(5).fill(0).map((_, i) => (
+            <td key={i}>
+                <div className="skeleton" style={{ height: '24px', width: i === 0 ? '70%' : '40%', borderRadius: '4px' }}></div>
+            </td>
+        ))}
+    </tr>
+);
+
 const SharedWithMe = () => {
     const [sharedFiles, setSharedFiles] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -49,7 +59,7 @@ const SharedWithMe = () => {
                 </div>
             </div>
 
-            <div className="data-table-container" style={{ marginTop: '2.5rem' }}>
+            <div className="data-table-container" style={{ marginTop: '3.5rem', background: 'white', borderRadius: '1rem', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
                 <div className="table-header">
                     <h2 style={{ fontSize: '1.125rem', fontWeight: 600 }}>Access Records</h2>
                     <span className="badge badge-public">{sharedFiles.length} Authorized Files</span>
@@ -68,27 +78,26 @@ const SharedWithMe = () => {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr>
-                                    <td colSpan="5" style={{ textAlign: 'center', padding: '3rem' }}>
-                                        <div className="animate-pulse">Loading shared workspace...</div>
-                                    </td>
-                                </tr>
+                                Array(5).fill(0).map((_, i) => <SkeletonRow key={i} />)
                             ) : sharedFiles.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" style={{ textAlign: 'center', padding: '4rem', color: '#64748b' }}>
-                                        <Users size={48} style={{ opacity: 0.2, marginBottom: '1rem' }} />
-                                        <p>No files have been shared with you yet.</p>
+                                    <td colSpan="5" style={{ textAlign: 'center', padding: '5rem 0', color: '#64748b' }}>
+                                        <div style={{ display: 'inline-flex', padding: '1.5rem', background: '#f8fafc', borderRadius: '50%', marginBottom: '1.5rem' }}>
+                                            <Users size={48} color="#cbd5e1" />
+                                        </div>
+                                        <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>Workspace Clean</h3>
+                                        <p style={{ maxWidth: '300px', margin: '0 auto' }}>No files have been shared with your account via direct email yet.</p>
                                     </td>
                                 </tr>
                             ) : (
                                 sharedFiles.map((file) => (
-                                    <tr key={file.id}>
+                                    <tr key={file.id} className="animate-fade-in">
                                         <td>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                                 <div style={{ color: '#6366f1' }}>
                                                     <FileText size={20} />
                                                 </div>
-                                                <span style={{ fontWeight: 500 }}>{file.fileName}</span>
+                                                <span style={{ fontWeight: 600 }}>{file.fileName}</span>
                                             </div>
                                         </td>
                                         <td>
@@ -96,7 +105,7 @@ const SharedWithMe = () => {
                                                 <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                     <UserIcon size={12} />
                                                 </div>
-                                                {file.ownerEmail}
+                                                <span style={{ fontWeight: 500 }}>{file.ownerEmail}</span>
                                             </div>
                                         </td>
                                         <td>
@@ -107,18 +116,18 @@ const SharedWithMe = () => {
                                         </td>
                                         <td>{formatSize(file.fileSize)}</td>
                                         <td>
-                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                                                 <button
                                                     className="btn btn-outline"
                                                     style={{ padding: '6px 10px' }}
-                                                    onClick={() => toast.error('Direct download requires owner-signed pre-signed URL')}
+                                                    onClick={() => toast.error('Access restricted to preview only')}
                                                 >
                                                     <Download size={16} />
                                                 </button>
                                                 <button
                                                     className="btn btn-primary"
-                                                    style={{ padding: '6px 10px' }}
-                                                    onClick={() => toast.success('Viewing shared file content')}
+                                                    style={{ padding: '6px 12px' }}
+                                                    onClick={() => toast.success('Secure preview generated')}
                                                 >
                                                     <ExternalLink size={16} />
                                                 </button>
