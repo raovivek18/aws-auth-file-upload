@@ -4,6 +4,10 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import ActivityLog from "./pages/ActivityLog";
+import { initAuthLogger } from "./services/authLogger";
+
+// Initialize system logging listeners
+initAuthLogger();
 
 function App() {
   return (

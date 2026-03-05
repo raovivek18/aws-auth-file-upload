@@ -1,6 +1,7 @@
 import { generateClient } from 'aws-amplify/api';
 import * as mutations from '../graphql/mutations';
 import * as queries from '../graphql/queries';
+import logger from './loggerService';
 
 const client = generateClient();
 
@@ -18,7 +19,7 @@ const metadataService = {
                         size: fileData.size,
                         type: fileData.type,
                         key: fileData.key,
-                        owner: fileData.owner,
+                        owner: fileData.owner, // This should be the sub (userId)
                         sharingStatus: fileData.sharingStatus || 'PRIVATE',
                         shareExpiration: fileData.shareExpiration,
                         uploadTimestamp: new Date().toISOString()
@@ -26,9 +27,9 @@ const metadataService = {
                 },
                 authMode: 'userPool'
             });
-            return result.data.createFileMetadata;
+            return result.data?.createFileMetadata;
         } catch (error) {
-            console.error('Error saving metadata:', error);
+            logger.error('Metadata save failed', { error, fileData });
             throw error;
         }
     },
@@ -38,22 +39,30 @@ const metadataService = {
      */
     getUserFiles: async (owner, limit = 10, nextToken = null) => {
         try {
+            // owner should be the userId (sub)
             const result = await client.graphql({
                 query: queries.listFileMetadataByOwner,
                 variables: {
                     owner,
                     limit,
                     nextToken,
-                    sortDirection: 'DESC' // Latest first
+                    sortDirection: 'DESC'
                 },
                 authMode: 'userPool'
             });
+
             return {
-                items: result.data.listFileMetadataByOwner.items,
-                nextToken: result.data.listFileMetadataByOwner.nextToken
+                items: result.data?.listFileMetadataByOwner?.items || [],
+                nextToken: result.data?.listFileMetadataByOwner?.nextToken
             };
         } catch (error) {
-            console.error('Error fetching metadata:', error);
+            // Enhanced logging for debugging the "Failed to load" issue
+            logger.error('Query metadata failed', {
+                error,
+                owner,
+                errors: error.errors,
+                message: error.message
+            });
             throw error;
         }
     },
@@ -63,6 +72,7 @@ const metadataService = {
      */
     checkFileExists: async (name, owner) => {
         try {
+            // owner should be the userId (sub)
             const result = await client.graphql({
                 query: queries.listFileMetadataByOwner,
                 variables: {
@@ -73,9 +83,9 @@ const metadataService = {
                 },
                 authMode: 'userPool'
             });
-            return result.data.listFileMetadataByOwner.items.length > 0;
+            return (result.data?.listFileMetadataByOwner?.items?.length || 0) > 0;
         } catch (error) {
-            console.error('Error checking file existence:', error);
+            logger.error('Check file exists query failed', { error, name, owner });
             return false;
         }
     },
@@ -96,9 +106,9 @@ const metadataService = {
                 },
                 authMode: 'userPool'
             });
-            return result.data.updateFileMetadata;
+            return result.data?.updateFileMetadata;
         } catch (error) {
-            console.error('Error updating sharing status:', error);
+            logger.error('Update sharing failed', { error, id, status });
             throw error;
         }
     },
@@ -118,9 +128,9 @@ const metadataService = {
                 },
                 authMode: 'userPool'
             });
-            return result.data.updateFileMetadata;
+            return result.data?.updateFileMetadata;
         } catch (error) {
-            console.error('Error renaming metadata:', error);
+            logger.error('Rename metadata failed', { error, id, newName });
             throw error;
         }
     },
@@ -138,7 +148,7 @@ const metadataService = {
                 authMode: 'userPool'
             });
         } catch (error) {
-            console.error('Error deleting metadata:', error);
+            logger.error('Delete metadata failed', { error, id });
             throw error;
         }
     }

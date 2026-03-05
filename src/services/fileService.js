@@ -1,5 +1,4 @@
 import { uploadData, remove, getUrl } from 'aws-amplify/storage';
-import { fetchAuthSession } from 'aws-amplify/auth';
 import metadataService from './metadataService';
 import activityService from './activityService';
 import logger from './loggerService';
@@ -50,7 +49,6 @@ const fileService = {
 
         try {
             // 4. Upload to S3 with 'private' access level
-            // This ensures files are stored under /private/{identityId}/ and enforced by IAM
             const uploadOperation = uploadData({
                 key: s3Key,
                 data: file,
@@ -73,8 +71,8 @@ const fileService = {
                 name: file.name,
                 size: file.size,
                 type: file.type,
-                key: s3Key, // Store the local key, accessLevel handles the prefix
-                owner: userId,
+                key: s3Key,
+                owner: userId, // Ensure we use the passed userId for owner
                 sharingStatus: 'PRIVATE'
             });
 
@@ -83,7 +81,11 @@ const fileService = {
 
             return { key: s3Key, metadata };
         } catch (error) {
-            console.error('Error during file upload process:', error);
+            logger.error(error, {
+                action: 'file_upload_failure',
+                fileName: file.name,
+                userId
+            });
             throw new Error(error.message || 'Failed to upload file.');
         }
     },
@@ -94,11 +96,10 @@ const fileService = {
     listFiles: async (userId, limit = 10, nextToken = null) => {
         try {
             const { items, nextToken: newNextToken } = await metadataService.getUserFiles(userId, limit, nextToken);
-            // No need to sort here if using the index with sortDirection: 'DESC'
             return { items, nextToken: newNextToken };
         } catch (error) {
             logger.error('Error listing files:', error);
-            throw new Error('Failed to fetch file list.');
+            throw error; // Rethrow to let the caller handle it
         }
     },
 
@@ -106,36 +107,35 @@ const fileService = {
      * Deletes a file from storage and its corresponding metadata
      */
     deleteFile: async (file, currentUserId) => {
-        // Security Check: Ensure only owner can delete
         if (file.owner !== currentUserId) {
             throw new Error('Authorization failed: You do not own this file.');
         }
 
         try {
-            // 1. Delete from S3 using 'private' access level
             await remove({
                 key: file.key,
                 options: { accessLevel: 'private' }
             });
 
-            // 2. Delete metadata from DynamoDB
             if (file.id) {
                 await metadataService.deleteMetadata(file.id);
             }
 
-            // 3. Log Activity
             await activityService.logActivity('File deleted', file.id, file.name);
         } catch (error) {
-            console.error('Error deleting file:', error);
+            logger.error(error, {
+                action: 'file_delete_failure',
+                fileId: file.id,
+                currentUserId
+            });
             throw new Error(error.message || 'Failed to delete file.');
         }
     },
 
     /**
-     * Toggles file privacy between PUBLIC and PRIVATE
+     * Toggles file privacy
      */
     toggleFilePrivacy: async (file, currentUserId) => {
-        // Security Check: Ensure only owner can change settings
         if (file.owner !== currentUserId) {
             throw new Error('Authorization failed: You do not own this file.');
         }
@@ -149,20 +149,18 @@ const fileService = {
 
             return updatedMetadata;
         } catch (error) {
-            console.error('Error toggling privacy:', error);
+            logger.error(error, {
+                action: 'toggle_privacy_failure',
+                fileId: file.id,
+                currentUserId
+            });
             throw new Error('Failed to update sharing settings.');
         }
     },
 
     generateShareLink: async (file, currentUserId, expiresIn = 3600) => {
         try {
-            // Debugging owner match
             if (file.owner !== currentUserId) {
-                logger.warn('Unauthorized link generation attempt', {
-                    fileId: file.id,
-                    fileOwner: file.owner,
-                    accessor: currentUserId
-                });
                 throw new Error('Authorization failed: Only owners can generate share links.');
             }
 
@@ -171,8 +169,6 @@ const fileService = {
                 options: {
                     accessLevel: 'private',
                     expiresIn,
-                    // If validateObjectExistence is true, it verifies the file exists in S3.
-                    // This can sometimes fail if the identity ID has changed.
                     validateObjectExistence: true
                 }
             });
@@ -186,18 +182,16 @@ const fileService = {
         } catch (error) {
             logger.error('Error generating share link:', {
                 error,
-                fileId: file.id,
-                accessLevel: 'private'
+                fileId: file.id
             });
-            throw new Error(error.message || 'Failed to generate share link.');
+            throw error;
         }
     },
 
     /**
-     * Renames a file's metadata display name
+     * Renames a file's metadata
      */
     renameFile: async (file, newName, currentUserId) => {
-        // Security Check: Ensure only owner can rename
         if (file.owner !== currentUserId) {
             throw new Error('Authorization failed: You do not own this file.');
         }
@@ -208,13 +202,15 @@ const fileService = {
 
         try {
             const updatedMetadata = await metadataService.renameMetadata(file.id, newName.trim());
-
-            // Log activity
             await activityService.logActivity('File renamed', file.id, `From: ${file.name} To: ${newName}`);
-
             return updatedMetadata;
         } catch (error) {
-            console.error('Error renaming file:', error);
+            logger.error(error, {
+                action: 'file_rename_failure',
+                fileId: file.id,
+                newName,
+                currentUserId
+            });
             throw new Error('Failed to rename file.');
         }
     }

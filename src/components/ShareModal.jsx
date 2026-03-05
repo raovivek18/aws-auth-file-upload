@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import logger from '../services/loggerService';
 import './ShareModal.css';
 
 const ShareModal = ({ isOpen, onClose, file, onGenerate }) => {
@@ -35,7 +36,11 @@ const ShareModal = ({ isOpen, onClose, file, onGenerate }) => {
             setTimeLeft(expiry);
             setCopied(false);
         } catch (err) {
-            console.error(err);
+            logger.error(err, {
+                action: 'share_link_generation_failure',
+                fileId: file.id,
+                fileName: file.name
+            });
             toast.error(err.message || 'Failed to generate link');
         } finally {
             setIsGenerating(false);

@@ -4,7 +4,7 @@ import fileService from '../services/fileService';
 import ShareModal from './ShareModal';
 import {
     Search, Upload, RefreshCw, Trash2, Shield, Globe,
-    Copy, Image as ImageIcon, Edit3, Eye, ArrowUp, ArrowDown,
+    Copy, Image as ImageIcon, Edit3, Eye,
     Video, FileCode, File, Clock, AlertTriangle, FileText, ChevronUp, ChevronDown
 } from 'lucide-react';
 import FilePreviewModal from './FilePreviewModal';
@@ -103,7 +103,8 @@ const FileUpload = ({ onStatusChange }) => {
 
     // Fetch files (initial load)
     const fetchFiles = useCallback(async (isInitial = true) => {
-        if (!user?.userId || isFetchingRef.current) return;
+        const identifier = user?.userId;
+        if (!identifier || isFetchingRef.current) return;
 
         if (isInitial) {
             setLoadingFiles(true);
@@ -114,25 +115,26 @@ const FileUpload = ({ onStatusChange }) => {
         isFetchingRef.current = true;
 
         try {
-            // Get current nextToken from state inside the block for "Load More"
-            // If isInitial is true, we pass null. If false, we use the current nextToken state.
-            // Since we can't easily get nextToken here without making it a dependency, 
-            // we'll pass it as an argument or just keep it as a dependency but be careful.
-            // Actually, for "Load More" to work, fetchFiles DOES depend on nextToken.
             const currentToken = isInitial ? null : nextToken;
-            const result = await fileService.listFiles(user.userId, 10, currentToken);
+            const result = await fileService.listFiles(identifier, 10, currentToken);
 
             setFiles(prev => isInitial ? result.items : [...prev, ...result.items]);
             setNextToken(result.nextToken);
         } catch (err) {
-            logger.error('Failed to load vault library', { error: err, userId: user.userId });
-            toast.error('Failed to load your vault library');
+            const errorMessage = err.errors?.[0]?.message || err.message || 'Identity verification failed';
+            logger.error('Failed to load vault library', {
+                error: err,
+                userId: user?.userId,
+                username: user?.username,
+                details: errorMessage
+            });
+            toast.error(`Vault loading failed: ${errorMessage}`);
         } finally {
             setLoadingFiles(false);
             setLoadingMore(false);
             isFetchingRef.current = false;
         }
-    }, [user?.userId, nextToken]);
+    }, [user?.userId, user?.username, nextToken]);
 
     // Handle Stats Updates separately to avoid circular dependency in fetchFiles
     useEffect(() => {
@@ -147,39 +149,36 @@ const FileUpload = ({ onStatusChange }) => {
         }
     }, [files, onStatusChange, loadingFiles]);
 
-    // Initial fetch on mount or when user changes
     useEffect(() => {
-        let isMounted = true;
-        if (user?.userId && isMounted) {
-            // We use a small timeout to ensure the component is fully ready
-            // and avoid double-triggering during React StrictMode mount
+        if (user?.userId) {
             const timer = setTimeout(() => {
                 fetchFiles(true);
             }, 100);
             return () => {
-                isMounted = false;
                 clearTimeout(timer);
             };
         }
-    }, [user?.userId]); // Removed fetchFiles from dependencies to prevent re-triggering loop
+    }, [user?.userId, fetchFiles]);
 
     const handleUpload = async (e) => {
+        const identifier = user?.userId;
         const selectedFile = e.target.files[0];
-        if (!selectedFile) return;
+        if (!selectedFile || !identifier) return;
 
         setIsUploading(true);
         setUploadProgress(0);
         const uploadId = toast.loading(`Preparing ${selectedFile.name}...`);
 
         try {
-            await fileService.uploadFile(selectedFile, user.userId, (progress) => {
+            await fileService.uploadFile(selectedFile, identifier, (progress) => {
                 setUploadProgress(progress);
             });
             toast.success(`${selectedFile.name} uploaded successfully. Click Refresh to update your list.`, { id: uploadId });
-            // Automatic fetch removed per user request
+            fetchFiles(true); // Automatically refresh
         } catch (err) {
-            logger.error('Upload failed', { error: err, fileName: selectedFile.name });
-            toast.error(err.message || 'Upload failed', { id: uploadId });
+            const errMsg = err.message || 'File upload rejected by security policy';
+            logger.error('Upload failed', { error: err, fileName: selectedFile.name, userId: identifier });
+            toast.error(errMsg, { id: uploadId });
         } finally {
             setIsUploading(false);
             setUploadProgress(0);
@@ -192,13 +191,15 @@ const FileUpload = ({ onStatusChange }) => {
     }, []);
 
     const handleDelete = async () => {
+        const identifier = user?.userId;
         const file = showDeleteConfirm.file;
-        if (!file || !user?.userId) return;
+        if (!file || !identifier) return;
 
         const delId = toast.loading(`Deleting ${file.name}...`);
         try {
-            await fileService.deleteFile(file, user.userId);
-            toast.success('File deleted. Click Refresh to update your list.', { id: delId });
+            await fileService.deleteFile(file, identifier);
+            toast.success('File deleted', { id: delId });
+            setFiles(prev => prev.filter(f => f.id !== file.id)); // Optimistic UI update
         } catch (err) {
             toast.error(err.message || 'Deletion failed', { id: delId });
         } finally {
@@ -207,10 +208,11 @@ const FileUpload = ({ onStatusChange }) => {
     };
 
     const handleTogglePrivacy = useCallback(async (file) => {
-        if (!user?.userId) return;
+        const identifier = user?.userId;
+        if (!identifier) return;
         const toggleId = toast.loading('Updating sharing settings...');
         try {
-            const updated = await fileService.toggleFilePrivacy(file, user.userId);
+            const updated = await fileService.toggleFilePrivacy(file, identifier);
             const status = updated.sharingStatus === 'PUBLIC' ? 'Public' : 'Private';
             toast.success(`Access changed to ${status}`, { id: toggleId });
             setFiles(prev => prev.map(f => f.id === updated.id ? updated : f));
@@ -220,16 +222,18 @@ const FileUpload = ({ onStatusChange }) => {
     }, [user?.userId]);
 
     const handleGenerateLink = async (file, expiresIn) => {
-        if (!user?.userId) return;
-        return await fileService.generateShareLink(file, user.userId, expiresIn);
+        const identifier = user?.userId;
+        if (!identifier) return;
+        return await fileService.generateShareLink(file, identifier, expiresIn);
     };
 
     const handleRename = async () => {
-        if (!renameModal.file || !renameModal.newName.trim() || !user?.userId) return;
+        const identifier = user?.userId;
+        if (!renameModal.file || !renameModal.newName.trim() || !identifier) return;
 
         const renameId = toast.loading(`Renaming to ${renameModal.newName}...`);
         try {
-            const updated = await fileService.renameFile(renameModal.file, renameModal.newName, user.userId);
+            const updated = await fileService.renameFile(renameModal.file, renameModal.newName, identifier);
             setFiles(prev => prev.map(f => f.id === updated.id ? { ...f, name: updated.name } : f));
             toast.success('File renamed successfully', { id: renameId });
             setRenameModal({ isOpen: false, file: null, newName: '' });
@@ -257,14 +261,12 @@ const FileUpload = ({ onStatusChange }) => {
     const filteredFiles = useMemo(() => {
         let processed = [...files];
 
-        // 1. Filter
         if (searchQuery) {
             processed = processed.filter(f =>
                 f.name.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
 
-        // 2. Sort
         processed.sort((a, b) => {
             let valA = a[sortConfig.key];
             let valB = b[sortConfig.key];
@@ -324,7 +326,6 @@ const FileUpload = ({ onStatusChange }) => {
                 </div>
             </div>
 
-            {/* Global Progress Bar */}
             {isUploading && (
                 <div style={{ padding: '0 1rem 1rem' }}>
                     <div style={{ height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
@@ -410,7 +411,6 @@ const FileUpload = ({ onStatusChange }) => {
                 )}
             </div>
 
-            {/* Rename Modal */}
             {renameModal.isOpen && (
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
                     <div className="stat-card" style={{ width: '400px', padding: '2rem', animation: 'fadeIn 0.2s ease-out' }}>
@@ -438,7 +438,6 @@ const FileUpload = ({ onStatusChange }) => {
                 </div>
             )}
 
-            {/* Custom Delete Confirmation Modal */}
             {showDeleteConfirm.show && (
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
                     <div className="stat-card" style={{ width: '400px', padding: '2rem', animation: 'fadeIn 0.2s ease-out' }}>
