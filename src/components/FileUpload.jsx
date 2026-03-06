@@ -109,8 +109,9 @@ const FileUpload = ({ onStatusChange }) => {
             setFiles(prev => isInitial ? result.items : [...prev, ...result.items]);
             setNextToken(result.nextToken);
         } catch (err) {
-            logger.error('Failed to load vault library', { error: err, userId: user?.userId });
-            toast.error(`Vault loading failed: ${err.message}`);
+            const errorMessage = err.message || (err.errors ? err.errors[0]?.message : 'Unknown cloud error');
+            logger.error('Failed to load vault library', { error: err, userId: identifier });
+            toast.error(`Vault loading failed: ${errorMessage}`);
         } finally {
             setLoadingFiles(false);
             setLoadingMore(false);
