@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import MainLayout from '../layout/MainLayout';
 import activityService from '../services/activityService';
+import logger from '../services/loggerService';
 import {
     RefreshCw, Database, ShieldCheck,
     ArrowUpRight, Trash2, Globe, Lock, Search,
@@ -25,6 +26,7 @@ const ActivityLog = () => {
             const data = await activityService.getActivityLogs();
             setLogs(data);
         } catch (err) {
+            logger.error('Activity logs fetch failed', { error: err });
             toast.error('Failed to retrieve audit trail');
         } finally {
             setLoading(false);

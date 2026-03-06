@@ -87,8 +87,13 @@ const FileUpload = ({ onStatusChange }) => {
     const isFetchingRef = React.useRef(false);
 
     const fetchFiles = useCallback(async (isInitial = true) => {
-        const identifier = user?.userId;
-        if (!identifier || isFetchingRef.current) return;
+        const identifier = user?.userId || user?.username || user?.attributes?.sub;
+        if (!identifier || isFetchingRef.current) {
+            if (!identifier && user) {
+                logger.warn('User object found but no identifier detected', { user });
+            }
+            return;
+        }
 
         if (isInitial) {
             setLoadingFiles(true);
@@ -150,9 +155,12 @@ const FileUpload = ({ onStatusChange }) => {
     };
 
     const handleUpload = async (e) => {
-        const identifier = user?.userId;
+        const identifier = user?.userId || user?.username || user?.attributes?.sub;
         const selectedFile = e.target.files[0];
-        if (!selectedFile || !identifier) return;
+        if (!selectedFile || !identifier) {
+            if (selectedFile && !identifier) logger.error('Upload blocked: No user identifier');
+            return;
+        }
 
         setIsUploading(true);
         setUploadProgress(0);
@@ -196,8 +204,11 @@ const FileUpload = ({ onStatusChange }) => {
     };
 
     const handleTogglePrivacy = useCallback(async (file) => {
-        const identifier = user?.userId;
-        if (!identifier) return;
+        const identifier = user?.userId || user?.username || user?.attributes?.sub;
+        if (!identifier) {
+            toast.error('Session expired. Please log in again.');
+            return;
+        }
         const toggleId = toast.loading('Syncing permissions...');
         try {
             const updated = await fileService.toggleFilePrivacy(file, identifier);
@@ -215,7 +226,7 @@ const FileUpload = ({ onStatusChange }) => {
     };
 
     const handleRename = async () => {
-        const identifier = user?.userId;
+        const identifier = user?.userId || user?.username || user?.attributes?.sub;
         if (!renameModal.file || !renameModal.newName.trim() || !identifier) return;
 
         const renameId = toast.loading(`Renaming...`);

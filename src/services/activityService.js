@@ -2,6 +2,7 @@ import { generateClient } from 'aws-amplify/api';
 import { getCurrentUser } from 'aws-amplify/auth';
 import * as mutations from '../graphql/mutations';
 import * as queries from '../graphql/queries';
+import logger from './loggerService';
 
 const client = generateClient();
 
@@ -20,7 +21,7 @@ const activityService = {
         const data = await response.json();
         ip = data.ip;
       } catch (e) {
-        console.warn('Could not fetch IP address:', e);
+        logger.warn('Could not fetch IP address', { error: e });
       }
 
       await client.graphql({
@@ -38,7 +39,7 @@ const activityService = {
         authMode: 'userPool'
       });
     } catch (error) {
-      console.error('Failed to log activity:', error);
+      logger.error('Failed to log activity', { error });
     }
   },
 
@@ -58,7 +59,7 @@ const activityService = {
       });
       return result.data?.listLogsByUser?.items || [];
     } catch (error) {
-      console.error('Error fetching activity logs:', error);
+      logger.error('Error fetching activity logs', { error });
       throw new Error('Could not retrieve activity logs.');
     }
   }

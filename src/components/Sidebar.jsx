@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, History, Shield, LogOut, Share2, BarChart3 } from 'lucide-react';
 import { signOut } from 'aws-amplify/auth';
+import logger from '../services/loggerService';
 import '../Dashboard.css';
 
 const Sidebar = () => {
@@ -10,7 +11,7 @@ const Sidebar = () => {
             await signOut();
             window.location.reload();
         } catch (error) {
-            console.error('Error signing out:', error);
+            logger.error('Logout failed', { error });
         }
     };
 

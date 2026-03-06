@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Download, Maximize2, FileText, ImageIcon } from 'lucide-react';
+import logger from '../services/loggerService';
 import './ShareModal.css';
 
 const FilePreviewModal = ({ isOpen, onClose, file, getUrl }) => {
@@ -24,7 +25,7 @@ const FilePreviewModal = ({ isOpen, onClose, file, getUrl }) => {
             const url = await getUrl(file, 600); // 10 mins
             setPreviewUrl(url);
         } catch (err) {
-            console.error('Preview error:', err);
+            logger.error('Preview generation error', { error: err, fileId: file?.id });
             setError('Failed to generate preview. You can still download the file.');
         } finally {
             setLoading(false);
