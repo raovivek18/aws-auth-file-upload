@@ -1,18 +1,37 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-    --primary: #6366f1;
-    --primary-hover: #4f46e5;
-    --bg-main: #f8fafc;
-    --bg-sidebar: #0f172a;
-    --text-main: #1e293b;
-    --text-muted: #64748b;
-    --glass-bg: rgba(255, 255, 255, 0.8);
-    --border-color: rgba(226, 232, 240, 0.8);
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    --radius-lg: 1rem;
-    --sidebar-width: 260px;
+    --primary: #ffffff;
+    --primary-hover: #e5e5e5;
+    --bg-main: #000000;
+    --bg-sidebar: #000000;
+    --text-main: #ffffff;
+    --text-muted: #a3a3a3;
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --border-color: #333333;
+    --shadow-sm: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+    --shadow-md: 0 12px 48px 0 rgba(0, 0, 0, 0.9);
+    --radius-lg: 1.25rem;
+    --sidebar-width: 280px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 * {
@@ -21,10 +40,13 @@
     box-sizing: border-box;
 }
 
+html,
 body {
-    font-family: 'Inter', -apple-system, sans-serif;
-    background-color: var(--bg-main);
+    margin: 0;
+    padding: 0;
+    background-color: #000000 !important;
     color: var(--text-main);
+    font-family: 'Inter', -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -71,7 +93,7 @@ body {
     gap: 1rem;
     padding: 0.875rem 1rem;
     border-radius: 0.75rem;
-    color: #94a3b8;
+    color: #a3a3a3;
     text-decoration: none;
     font-weight: 500;
     transition: all 0.2s ease;
@@ -85,7 +107,8 @@ body {
 
 .nav-item.active {
     background: var(--primary);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    color: black;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
 }
 
 .sidebar-footer {
@@ -130,7 +153,7 @@ body {
 }
 
 .stat-card {
-    background: white;
+    background: #000000;
     padding: 1.5rem;
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
@@ -160,7 +183,7 @@ body {
 
 /* Table Section */
 .data-table-container {
-    background: white;
+    background: #000000;
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
@@ -173,7 +196,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: white;
+    background: #000000;
 }
 
 .search-input-wrapper {
@@ -183,6 +206,8 @@ body {
 }
 
 .search-input {
+    background: #000000;
+    color: #ffffff;
     padding: 0.625rem 1rem 0.625rem 2.5rem;
     border: 1px solid var(--border-color);
     border-radius: 0.75rem;
@@ -195,7 +220,7 @@ body {
 .search-input:focus {
     outline: none;
     border-color: var(--primary);
-    background: white;
+    background: #111111;
 }
 
 .table-wrapper {
@@ -215,24 +240,35 @@ th {
     text-transform: uppercase;
     color: var(--text-muted);
     letter-spacing: 0.05em;
-    background: #f8fafc;
+    background: #000000;
     user-select: none;
     transition: background 0.2s ease;
 }
 
 th:hover {
-    background: #f1f5f9;
+    background: #111111;
 }
 
 td {
     padding: 1.25rem 1.5rem;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
     font-size: 0.875rem;
     color: var(--text-main);
 }
 
 tr:hover td {
-    background: #f8fafc;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.glass-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.glass-table th {
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
 }
 
 /* Badges */
@@ -247,13 +283,21 @@ tr:hover td {
 }
 
 .badge-public {
-    background: #ecfdf5;
-    color: #059669;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: 1px solid #333;
 }
 
 .badge-private {
-    background: #fef2f2;
-    color: #dc2626;
+    background: #000000;
+    color: #ffffff;
+    border: 1px solid #333;
+}
+
+.badge-slate {
+    background: #000000;
+    color: #a3a3a3;
+    border: 1px solid #333;
 }
 
 /* Buttons */
@@ -272,22 +316,22 @@ tr:hover td {
 }
 
 .btn-primary {
-    background: var(--primary);
-    color: white;
+    background: white;
+    color: black;
 }
 
 .btn-primary:hover {
-    background: var(--primary-hover);
+    background: #e5e5e5;
 }
 
 .btn-outline {
-    background: white;
+    background: #000000;
     border: 1px solid var(--border-color);
     color: var(--text-main);
 }
 
 .btn-outline:hover {
-    background: #f8fafc;
+    background: #111111;
 }
 
 /* Animations */
@@ -310,15 +354,15 @@ tr:hover td {
 /* Skeleton Loading */
 @keyframes skeletonPulse {
     0% {
-        background-color: #f1f5f9;
+        background-color: #111111;
     }
 
     50% {
-        background-color: #e2e8f0;
+        background-color: #222222;
     }
 
     100% {
-        background-color: #f1f5f9;
+        background-color: #111111;
     }
 }
 
@@ -391,12 +435,12 @@ tr:hover td {
 }
 
 input:focus-visible {
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
 }
 
 .loading-spinner {
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid var(--primary);
+    border: 3px solid #333;
+    border-top: 3px solid #ffffff;
     border-radius: 50%;
     width: 32px;
     height: 32px;
@@ -418,7 +462,7 @@ input:focus-visible {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.4);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(8px);
     z-index: 1000;
     display: flex;
@@ -460,14 +504,14 @@ input:focus-visible {
 }
 
 .close-btn:hover {
-    background: #f1f5f9;
+    background: #333333;
     color: var(--text-main);
 }
 
 .glass-card {
-    background: rgba(255, 255, 255, 0.95);
+    background: #000000;
     border: 1px solid var(--border-color);
-    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.5);
     border-radius: 1.25rem;
     width: 100%;
 }

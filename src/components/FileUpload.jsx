@@ -23,13 +23,13 @@ const FileRow = React.memo(({ file, onTogglePrivacy, onShare, onDelete, onRename
                 </div>
             </td>
             <td>
-                <span className={`badge ${file.sharingStatus === 'PUBLIC' ? 'badge-public' : 'badge-private'}`}>
+                <span className={`badge ${file.sharingStatus === 'PUBLIC' ? 'badge-public' : 'badge-slate'}`}>
                     {file.sharingStatus === 'PUBLIC' ? <Globe size={12} /> : <Shield size={12} />}
                     <span style={{ marginLeft: '4px' }}>{file.sharingStatus}</span>
                 </span>
             </td>
-            <td style={{ color: '#64748b' }}>{formatBytes(file.size)}</td>
-            <td style={{ color: '#64748b' }}>
+            <td style={{ color: '#a3a3a3' }}>{formatBytes(file.size)}</td>
+            <td style={{ color: '#a3a3a3' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Clock size={14} />
                     {format(new Date(file.uploadTimestamp), 'MMM d, h:mm a')}
@@ -38,18 +38,18 @@ const FileRow = React.memo(({ file, onTogglePrivacy, onShare, onDelete, onRename
             <td>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                     <button className="btn btn-outline" style={{ padding: '6px' }} onClick={() => onPreview(file)} title="Preview">
-                        <Eye size={16} color="#6366f1" />
+                        <Eye size={16} color="#ffffff" />
                     </button>
                     <button className="btn btn-outline" style={{ padding: '6px' }} onClick={() => onRename(file)} title="Rename">
-                        <Edit3 size={16} color="#0d9488" />
+                        <Edit3 size={16} color="#ffffff" />
                     </button>
                     <button className="btn btn-outline" style={{ padding: '6px' }} onClick={() => onTogglePrivacy(file)} title={file.sharingStatus === 'PRIVATE' ? 'Enable Public Access' : 'Disable Public Access'}>
-                        {file.sharingStatus === 'PRIVATE' ? <Shield size={16} /> : <Globe size={16} color="#059669" />}
+                        {file.sharingStatus === 'PRIVATE' ? <Shield size={16} /> : <Globe size={16} color="#ffffff" />}
                     </button>
                     <button className="btn btn-outline" style={{ padding: '6px' }} onClick={() => onShare(file)} title="Share">
                         <Copy size={16} />
                     </button>
-                    <button className="btn btn-outline" style={{ padding: '6px', color: '#dc2626', borderColor: '#fee2e2' }} onClick={() => onDelete(file)} title="Delete Forever">
+                    <button className="btn btn-outline" style={{ padding: '6px', color: '#ffffff', borderColor: '#333333' }} onClick={() => onDelete(file)} title="Delete Forever">
                         <Trash2 size={16} />
                     </button>
                 </div>
@@ -243,11 +243,11 @@ const FileUpload = ({ onStatusChange }) => {
     };
 
     const getFileIcon = useCallback((type) => {
-        if (type.includes('image')) return <ImageIcon size={20} color="#6366f1" />;
-        if (type.includes('video')) return <Video size={20} color="#8b5cf6" />;
-        if (type.includes('pdf')) return <FileText size={20} color="#ef4444" />;
-        if (type.includes('javascript') || type.includes('json') || type.includes('html')) return <FileCode size={20} color="#f59e0b" />;
-        return <File size={20} color="#64748b" />;
+        if (type.includes('image')) return <ImageIcon size={20} color="#ffffff" />;
+        if (type.includes('video')) return <Video size={20} color="#ffffff" />;
+        if (type.includes('pdf')) return <FileText size={20} color="#ffffff" />;
+        if (type.includes('javascript') || type.includes('json') || type.includes('html')) return <FileCode size={20} color="#ffffff" />;
+        return <File size={20} color="#a3a3a3" />;
     }, []);
 
     const formatBytes = useCallback((bytes) => {
@@ -285,7 +285,7 @@ const FileUpload = ({ onStatusChange }) => {
         <div className="file-system-container">
             <div className="table-header" style={{ flexWrap: 'wrap', gap: '1rem' }}>
                 <div className="search-input-wrapper">
-                    <Search className="search-icon" size={18} color="#64748b" style={{ position: 'absolute', left: '12px' }} />
+                    <Search className="search-icon" size={18} color="#a3a3a3" style={{ position: 'absolute', left: '12px' }} />
                     <input
                         type="text"
                         placeholder="Search workspace..."
@@ -308,30 +308,42 @@ const FileUpload = ({ onStatusChange }) => {
 
             {isUploading && (
                 <div style={{ padding: '0 1.5rem 1.5rem' }}>
-                    <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden', position: 'relative' }}>
-                        <div style={{ height: '100%', background: 'linear-gradient(90deg, #6366f1, #a855f7)', width: `${uploadProgress}%`, transition: 'width 0.3s ease' }}></div>
-                        <div style={{ position: 'absolute', right: 0, top: '-20px', fontSize: '0.75rem', fontWeight: 600, color: '#6366f1' }}>{uploadProgress}%</div>
+                    <div style={{ height: '6px', background: '#333333', borderRadius: '3px', overflow: 'hidden', position: 'relative' }}>
+                        <div style={{ height: '100%', background: '#ffffff', width: `${uploadProgress}%`, transition: 'width 0.3s ease' }}></div>
+                        <div style={{ position: 'absolute', right: 0, top: '-20px', fontSize: '0.75rem', fontWeight: 600, color: '#ffffff' }}>{uploadProgress}%</div>
                     </div>
                 </div>
             )}
 
             <div className="table-wrapper">
-                <table>
+                <table className="glass-table">
                     <thead>
                         <tr>
                             <th onClick={() => requestSort('name')} style={{ cursor: 'pointer' }}>
-                                Name {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    Document Name
+                                    {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? <ChevronUp size={14} className="fade-in" /> : <ChevronDown size={14} className="fade-in" />)}
+                                </div>
                             </th>
                             <th onClick={() => requestSort('sharingStatus')} style={{ cursor: 'pointer' }}>
-                                Status {sortConfig.key === 'sharingStatus' && (sortConfig.direction === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    Security Status
+                                    {sortConfig.key === 'sharingStatus' && (sortConfig.direction === 'asc' ? <ChevronUp size={14} className="fade-in" /> : <ChevronDown size={14} className="fade-in" />)}
+                                </div>
                             </th>
                             <th onClick={() => requestSort('size')} style={{ cursor: 'pointer' }}>
-                                Size {sortConfig.key === 'size' && (sortConfig.direction === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    Encryption Size
+                                    {sortConfig.key === 'size' && (sortConfig.direction === 'asc' ? <ChevronUp size={14} className="fade-in" /> : <ChevronDown size={14} className="fade-in" />)}
+                                </div>
                             </th>
                             <th onClick={() => requestSort('uploadTimestamp')} style={{ cursor: 'pointer' }}>
-                                Uploaded {sortConfig.key === 'uploadTimestamp' && (sortConfig.direction === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    Modified
+                                    {sortConfig.key === 'uploadTimestamp' && (sortConfig.direction === 'asc' ? <ChevronUp size={14} className="fade-in" /> : <ChevronDown size={14} className="fade-in" />)}
+                                </div>
                             </th>
-                            <th style={{ textAlign: 'right' }}>Actions</th>
+                            <th style={{ textAlign: 'right' }}>Vault Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -341,13 +353,13 @@ const FileUpload = ({ onStatusChange }) => {
                             <tr>
                                 <td colSpan="5">
                                     <div style={{ padding: '5rem 0', textAlign: 'center' }}>
-                                        <div style={{ display: 'inline-flex', padding: '1.5rem', background: '#f8fafc', borderRadius: '50%', marginBottom: '1.5rem' }}>
-                                            <FileText size={48} color="#cbd5e1" />
+                                        <div style={{ display: 'inline-flex', padding: '1.75rem', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '24px', marginBottom: '1.5rem', border: '1px solid #333333' }}>
+                                            <FileText size={48} color="#ffffff" opacity="0.5" />
                                         </div>
                                         <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>
                                             {searchQuery ? 'No match found' : 'Secure Vault Empty'}
                                         </h3>
-                                        <p style={{ color: '#64748b', maxWidth: '300px', margin: '0 auto 1.5rem' }}>
+                                        <p style={{ color: '#a3a3a3', maxWidth: '300px', margin: '0 auto 1.5rem' }}>
                                             {searchQuery ? `We couldn't find items matching "${searchQuery}"` : 'Your encrypted library is empty. Start by uploading a secure file.'}
                                         </p>
                                         {!searchQuery && (
@@ -392,8 +404,8 @@ const FileUpload = ({ onStatusChange }) => {
                 <div className="modal-overlay" onClick={() => setRenameModal({ isOpen: false, file: null, newName: '' })}>
                     <div className="stat-card animate-fade-in" style={{ width: '400px', padding: '2rem' }} onClick={e => e.stopPropagation()}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                            <div style={{ background: '#0d948815', padding: '10px', borderRadius: '10px' }}>
-                                <Edit3 size={24} color="#0d9488" />
+                            <div style={{ background: '#333333', padding: '10px', borderRadius: '10px' }}>
+                                <Edit3 size={24} color="#ffffff" />
                             </div>
                             <h3 style={{ margin: 0 }}>Rename Metadata</h3>
                         </div>
@@ -416,16 +428,16 @@ const FileUpload = ({ onStatusChange }) => {
             {showDeleteConfirm.show && (
                 <div className="modal-overlay" onClick={() => setShowDeleteConfirm({ show: false, file: null })}>
                     <div className="stat-card animate-fade-in" style={{ width: '400px', padding: '2rem' }} onClick={e => e.stopPropagation()}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', color: '#ef4444' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', color: '#ffffff' }}>
                             <AlertTriangle size={32} />
                             <h3 style={{ margin: 0 }}>Secure Deletion</h3>
                         </div>
-                        <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '2rem' }}>
+                        <p style={{ color: '#a3a3a3', fontSize: '0.875rem', marginBottom: '2rem' }}>
                             This will permanently remove <strong>{showDeleteConfirm.file?.name}</strong> from your secure vault. This action cannot be reversed.
                         </p>
                         <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
                             <button className="btn btn-outline" onClick={() => setShowDeleteConfirm({ show: false, file: null })}>Keep File</button>
-                            <button className="btn btn-primary" style={{ background: '#ef4444' }} onClick={handleDelete}>Delete Forever</button>
+                            <button className="btn btn-primary" style={{ background: '#ffffff', color: 'black' }} onClick={handleDelete}>Delete Forever</button>
                         </div>
                     </div>
                 </div>

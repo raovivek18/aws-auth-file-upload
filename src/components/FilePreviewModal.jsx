@@ -42,7 +42,7 @@ const FilePreviewModal = ({ isOpen, onClose, file, getUrl }) => {
             <div className="modal-content glass-card preview-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '900px', width: '90%' }}>
                 <div className="modal-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        {isImage ? <ImageIcon size={20} color="#6366f1" /> : <FileText size={20} color="#ef4444" />}
+                        {isImage ? <ImageIcon size={20} color="#ffffff" /> : <FileText size={20} color="#ffffff" />}
                         <h3 style={{ margin: 0 }}>{file.name}</h3>
                     </div>
                     <div style={{ display: 'flex', gap: '12px' }}>
@@ -55,9 +55,9 @@ const FilePreviewModal = ({ isOpen, onClose, file, getUrl }) => {
                     </div>
                 </div>
 
-                <div className="modal-body" style={{ minHeight: '400px', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f8fafc', borderRadius: '8px', overflow: 'hidden' }}>
+                <div className="modal-body" style={{ minHeight: '400px', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#111111', borderRadius: '8px', overflow: 'hidden' }}>
                     {loading ? (
-                        <div className="loading-spinner" style={{ width: '40px', height: '40px', border: '4px solid #e2e8f0', borderTop: '4px solid #6366f1' }}></div>
+                        <div className="loading-spinner" style={{ width: '40px', height: '40px', border: '4px solid #333333', borderTop: '4px solid #ffffff' }}></div>
                     ) : error ? (
                         <div style={{ textAlign: 'center', padding: '2rem' }}>
                             <p style={{ color: '#ef4444' }}>{error}</p>
@@ -68,8 +68,8 @@ const FilePreviewModal = ({ isOpen, onClose, file, getUrl }) => {
                         <iframe src={`${previewUrl}#toolbar=0`} title={file.name} style={{ width: '100%', height: '70vh', border: 'none' }} />
                     ) : (
                         <div style={{ textAlign: 'center', padding: '4rem' }}>
-                            <FileText size={64} color="#94a3b8" />
-                            <p style={{ marginTop: '1rem', color: '#64748b' }}>Preview not available for this file type.</p>
+                            <FileText size={64} color="#333333" />
+                            <p style={{ marginTop: '1rem', color: '#a3a3a3' }}>Preview not available for this file type.</p>
                             <button className="btn btn-primary" onClick={() => window.open(previewUrl)}>
                                 <Download size={18} /> Download File
                             </button>

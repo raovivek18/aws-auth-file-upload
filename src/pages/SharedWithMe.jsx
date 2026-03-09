@@ -49,17 +49,17 @@ const SharedWithMe = () => {
         <MainLayout>
             <div className="page-title">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)', padding: '10px', borderRadius: '12px' }}>
+                    <div style={{ background: '#333333', padding: '10px', borderRadius: '12px', border: '1px solid #444' }}>
                         <Users size={24} color="white" />
                     </div>
                     <div>
-                        <h1 style={{ margin: 0, fontSize: '1.875rem' }}>Shared With Me</h1>
-                        <p style={{ margin: 0, color: '#64748b' }}>Files shared with your account by colleagues.</p>
+                        <h1 style={{ margin: 0, fontSize: '1.875rem', color: '#ffffff' }}>Shared With Me</h1>
+                        <p style={{ margin: 0, color: '#a3a3a3' }}>Files shared with your account by colleagues.</p>
                     </div>
                 </div>
             </div>
 
-            <div className="data-table-container" style={{ marginTop: '3.5rem', background: 'white', borderRadius: '1rem', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
+            <div className="data-table-container" style={{ marginTop: '3.5rem', background: '#000000', borderRadius: '1rem', border: '1px solid #333333', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
                 <div className="table-header">
                     <h2 style={{ fontSize: '1.125rem', fontWeight: 600 }}>Access Records</h2>
                     <span className="badge badge-public">{sharedFiles.length} Authorized Files</span>
@@ -81,9 +81,9 @@ const SharedWithMe = () => {
                                 Array(5).fill(0).map((_, i) => <SkeletonRow key={i} />)
                             ) : sharedFiles.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" style={{ textAlign: 'center', padding: '5rem 0', color: '#64748b' }}>
-                                        <div style={{ display: 'inline-flex', padding: '1.5rem', background: '#f8fafc', borderRadius: '50%', marginBottom: '1.5rem' }}>
-                                            <Users size={48} color="#cbd5e1" />
+                                    <td colSpan="5" style={{ textAlign: 'center', padding: '5rem 0', color: '#a3a3a3' }}>
+                                        <div style={{ display: 'inline-flex', padding: '1.5rem', background: '#111111', borderRadius: '50%', marginBottom: '1.5rem' }}>
+                                            <Users size={48} color="#333333" />
                                         </div>
                                         <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>Workspace Clean</h3>
                                         <p style={{ maxWidth: '300px', margin: '0 auto' }}>No files have been shared with your account via direct email yet.</p>
@@ -94,7 +94,7 @@ const SharedWithMe = () => {
                                     <tr key={file.id} className="animate-fade-in">
                                         <td>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                                <div style={{ color: '#6366f1' }}>
+                                                <div style={{ color: '#ffffff' }}>
                                                     <FileText size={20} />
                                                 </div>
                                                 <span style={{ fontWeight: 600 }}>{file.fileName}</span>
@@ -102,14 +102,14 @@ const SharedWithMe = () => {
                                         </td>
                                         <td>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem' }}>
-                                                <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <UserIcon size={12} />
+                                                <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#333333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <UserIcon size={12} color="#ffffff" />
                                                 </div>
                                                 <span style={{ fontWeight: 500 }}>{file.ownerEmail}</span>
                                             </div>
                                         </td>
                                         <td>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#64748b', fontSize: '0.875rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#a3a3a3', fontSize: '0.875rem' }}>
                                                 <Calendar size={14} />
                                                 {format(new Date(file.createdAt), 'MMM d, yyyy')}
                                             </div>

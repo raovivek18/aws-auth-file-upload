@@ -27,9 +27,9 @@ const Navbar = () => {
                     justify-content: space-between;
                     align-items: center;
                     padding: 16px 40px;
-                    background: rgba(255, 255, 255, 0.8);
+                    background: #000000;
                     backdrop-filter: blur(10px);
-                    border-bottom: 1px solid #eef2f6;
+                    border-bottom: 1px solid #333333;
                     position: sticky;
                     top: 0;
                     z-index: 1000;
@@ -38,7 +38,7 @@ const Navbar = () => {
                     font-size: 1.5rem;
                     font-weight: 800;
                     text-decoration: none;
-                    color: #1e293b;
+                    color: #ffffff;
                     letter-spacing: -0.5px;
                 }
                 .nav-links {
@@ -47,13 +47,13 @@ const Navbar = () => {
                 }
                 .nav-item {
                     text-decoration: none;
-                    color: #64748b;
+                    color: #a3a3a3;
                     font-weight: 600;
                     font-size: 0.95rem;
                     transition: color 0.2s;
                 }
                 .nav-item:hover {
-                    color: #6366f1;
+                    color: #ffffff;
                 }
                 .nav-user {
                     display: flex;
@@ -61,27 +61,28 @@ const Navbar = () => {
                     gap: 15px;
                 }
                 .user-badge {
-                    background: #f1f5f9;
+                    background: #333333;
                     padding: 6px 14px;
                     border-radius: 20px;
                     font-size: 0.85rem;
                     font-weight: 700;
-                    color: #475569;
+                    color: #ffffff;
                 }
                 .btn-logout {
-                    background: #fff;
-                    border: 1px solid #e2e8f0;
+                    background: #000000;
+                    border: 1px solid #333333;
                     padding: 8px 18px;
                     border-radius: 8px;
                     font-size: 0.85rem;
                     font-weight: 600;
+                    color: #ffffff;
                     cursor: pointer;
                     transition: all 0.2s;
                 }
                 .btn-logout:hover {
-                    background: #fee2e2;
-                    color: #ef4444;
-                    border-color: #fee2e2;
+                    background: #ffffff;
+                    color: #000000;
+                    border-color: #ffffff;
                 }
             `}</style>
         </nav>

@@ -47,6 +47,11 @@ const ShareModal = ({ isOpen, onClose, file, onGenerate }) => {
         if (isOpen && file?.id) {
             fetchExistingShares();
         }
+        // Reset link state when modal opens/closes or file changes
+        setShareUrl('');
+        setTimeLeft(0);
+        setCopied(false);
+        setRecipientEmail('');
     }, [isOpen, file?.id, fetchExistingShares]);
 
     const handleEmailShare = async (e) => {
@@ -179,8 +184,8 @@ const ShareModal = ({ isOpen, onClose, file, onGenerate }) => {
                         </div>
                     )}
 
-                    <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0' }}>
-                        <h4 style={{ fontSize: '0.875rem', color: '#475569', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid #333333' }}>
+                        <h4 style={{ fontSize: '0.875rem', color: '#a3a3a3', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Mail size={16} /> Direct Access
                         </h4>
                         <form onSubmit={handleEmailShare}>
@@ -191,9 +196,9 @@ const ShareModal = ({ isOpen, onClose, file, onGenerate }) => {
                                     value={recipientEmail}
                                     onChange={(e) => setRecipientEmail(e.target.value)}
                                     className="share-input"
-                                    style={{ background: '#f8fafc' }}
+                                    style={{ background: '#000000', border: '1px solid #333' }}
                                 />
-                                <button type="submit" className="copy-btn" disabled={isSharing} style={{ background: '#6366f1', color: 'white' }}>
+                                <button type="submit" className="copy-btn" disabled={isSharing} style={{ background: '#ffffff', color: 'black' }}>
                                     {isSharing ? 'Sharing...' : 'Share Access'}
                                 </button>
                             </div>
@@ -201,24 +206,24 @@ const ShareModal = ({ isOpen, onClose, file, onGenerate }) => {
                     </div>
 
                     <div style={{ marginTop: '1.5rem' }}>
-                        <h4 style={{ fontSize: '0.875rem', color: '#475569', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h4 style={{ fontSize: '0.875rem', color: '#a3a3a3', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Shield size={16} /> Access Management
                         </h4>
                         <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
                             {isLoadingShares ? (
-                                <p style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Checking permissions...</p>
+                                <p style={{ fontSize: '0.75rem', color: '#a3a3a3' }}>Checking permissions...</p>
                             ) : existingShares.length === 0 ? (
-                                <p style={{ fontSize: '0.75rem', color: '#94a3b8' }}>No direct shares active for this file.</p>
+                                <p style={{ fontSize: '0.75rem', color: '#a3a3a3' }}>No direct shares active for this file.</p>
                             ) : (
                                 existingShares.map(share => (
-                                    <div key={share.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f1f5f9' }}>
+                                    <div key={share.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #333333' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <UserCheck size={14} color="#10b981" />
+                                            <UserCheck size={14} color="#ffffff" />
                                             <span style={{ fontSize: '0.8125rem' }}>{share.sharedWith}</span>
                                         </div>
                                         <button
                                             onClick={() => handleRevoke(share.id, share.sharedWith)}
-                                            style={{ background: 'none', border: 'none', color: '#ef4444', padding: '4px', cursor: 'pointer', borderRadius: '4px' }}
+                                            style={{ background: 'none', border: 'none', color: '#a3a3a3', padding: '4px', cursor: 'pointer', borderRadius: '4px' }}
                                             title="Revoke Access"
                                         >
                                             <UserX size={14} />

@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --primary-color: #6366f1;
-  --primary-hover: #4f46e5;
-  --bg-dark: #0f172a;
-  --card-bg: rgba(30, 41, 59, 0.7);
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --accent-blue: #38bdf8;
-  --accent-purple: #a855f7;
+  --primary-color: #000000;
+  --primary-hover: #333333;
+  --bg-dark: #000000;
+  --card-bg: #000000;
+  --text-main: #ffffff;
+  --text-muted: #a3a3a3;
+  --glass-border: #333333;
+  --accent-blue: #ffffff;
+  --accent-purple: #ffffff;
 }
 
 * {
@@ -18,18 +18,17 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
+  padding: 0;
+  background-color: #000000 !important;
+  color: var(--text-main);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-dark);
-  color: var(--text-main);
-  background-image:
-    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 40%);
   min-height: 100vh;
 }
 
@@ -43,9 +42,9 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-purple));
-  color: white;
-  border: none;
+  background: white;
+  color: black;
+  border: 1px solid white;
   padding: 10px 20px;
   border-radius: 8px;
   cursor: pointer;
@@ -55,7 +54,7 @@ body {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
 }
 
 .navbar {
@@ -63,7 +62,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--glass-border);
   position: sticky;
@@ -74,9 +73,7 @@ body {
 .navbar-brand {
   font-size: 1.5rem;
   font-weight: 800;
-  background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: white;
 }
 
 /* Amplify UI Overrides */
@@ -119,7 +116,8 @@ body {
 .avatar {
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, var(--accent-blue), var(--primary-color));
+  background: white;
+  color: black;
   border-radius: 50%;
   display: flex;
   align-items: center;

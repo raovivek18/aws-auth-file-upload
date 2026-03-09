@@ -4,7 +4,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(15, 23, 42, 0.85);
+    background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(8px);
     display: flex;
     justify-content: center;
@@ -44,10 +44,7 @@
 .modal-header h3 {
     margin: 0;
     font-size: 1.5rem;
-    background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: white;
 }
 
 .close-btn {
@@ -89,19 +86,21 @@
 }
 
 .file-status.public {
-    color: #34d399;
+    color: #ffffff;
 }
 
 .file-status.private {
-    color: #94a3b8;
+    color: #a3a3a3;
 }
 
 .btn-primary.public {
-    background: linear-gradient(135deg, #059669, #10b981);
+    background: white;
+    color: black;
 }
 
 .btn-primary.private {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    background: white;
+    color: black;
 }
 
 .generate-state {
@@ -123,11 +122,11 @@
 .timer-badge {
     align-self: center;
     padding: 6px 16px;
-    background: rgba(168, 85, 247, 0.1);
-    border: 1px solid rgba(168, 85, 247, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #333;
     border-radius: 100px;
     font-size: 0.9rem;
-    color: var(--accent-purple);
+    color: white;
     font-weight: 600;
 }
 
@@ -185,10 +184,10 @@ div::-webkit-scrollbar-track {
 }
 
 div::-webkit-scrollbar-thumb {
-    background: #e2e8f0;
+    background: #333333;
     border-radius: 10px;
 }
 
 div::-webkit-scrollbar-thumb:hover {
-    background: #cbd5e1;
+    background: #444444;
 }

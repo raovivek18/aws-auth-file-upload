@@ -53,7 +53,7 @@ const Analytics = () => {
             <MainLayout>
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
                     <div className="animate-pulse" style={{ textAlign: 'center' }}>
-                        <Activity size={48} className="text-primary" style={{ marginBottom: '1rem' }} />
+                        <Activity size={48} color="#ffffff" style={{ marginBottom: '1rem' }} />
                         <p>Aggregating your usage data...</p>
                     </div>
                 </div>
@@ -68,7 +68,7 @@ const Analytics = () => {
             <div className="page-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                     <h1 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <BarChart3 size={32} color="var(--primary)" />
+                        <BarChart3 size={32} color="#ffffff" />
                         Usage Analytics
                     </h1>
                     <p>Real-time insights into your secure vault metrics.</p>
@@ -89,7 +89,7 @@ const Analytics = () => {
                 <div className="stat-card">
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span className="stat-label">Total Uploads</span>
-                        <FileText size={20} color="var(--primary)" />
+                        <FileText size={20} color="#ffffff" />
                     </div>
                     <span className="stat-value">{stats?.totalFiles || 0}</span>
                     <div style={{ marginTop: '8px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
@@ -101,14 +101,14 @@ const Analytics = () => {
                 <div className="stat-card">
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span className="stat-label">Storage Used</span>
-                        <Database size={20} color="#10b981" />
+                        <Database size={20} color="#ffffff" />
                     </div>
                     <span className="stat-value">{formatSize(stats?.totalStorage)}</span>
-                    <div style={{ marginTop: '12px', width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '3px' }}>
+                    <div style={{ marginTop: '12px', width: '100%', height: '6px', background: '#333333', borderRadius: '3px' }}>
                         <div style={{
                             width: `${storageUsagePercent}%`,
                             height: '100%',
-                            background: storageUsagePercent > 90 ? '#ef4444' : '#10b981',
+                            background: '#ffffff',
                             borderRadius: '3px',
                             transition: 'width 0.5s ease-out'
                         }} />
@@ -121,7 +121,7 @@ const Analytics = () => {
                 <div className="stat-card">
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span className="stat-label">Total Shares</span>
-                        <Share2 size={20} color="#f59e0b" />
+                        <Share2 size={20} color="#ffffff" />
                     </div>
                     <span className="stat-value">{stats?.totalShares || 0}</span>
                     <div style={{ marginTop: '8px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
@@ -132,9 +132,9 @@ const Analytics = () => {
                 <div className="stat-card">
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span className="stat-label">Account Status</span>
-                        <Shield size={20} color="#8b5cf6" />
+                        <Shield size={20} color="#ffffff" />
                     </div>
-                    <span className="stat-value" style={{ color: '#8b5cf6', fontSize: '1.25rem' }}>Verified</span>
+                    <span className="stat-value" style={{ color: '#ffffff', fontSize: '1.25rem' }}>Verified</span>
                     <p style={{ marginTop: '8px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                         Last active: {stats?.lastActive ? new Date(stats.lastActive).toLocaleDateString() : 'N/A'}
                     </p>
@@ -154,7 +154,7 @@ const Analytics = () => {
                             width: '180px',
                             height: '180px',
                             borderRadius: '50%',
-                            background: `conic-gradient(var(--primary) ${storageUsagePercent}%, #f1f5f9 0)`,
+                            background: `conic-gradient(#ffffff ${storageUsagePercent}%, #333333 0)`,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -164,7 +164,7 @@ const Analytics = () => {
                                 width: '130px',
                                 height: '130px',
                                 borderRadius: '50%',
-                                background: 'white',
+                                background: '#000000',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
@@ -184,16 +184,16 @@ const Analytics = () => {
                     </h3>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1rem' }}>
                         {[
-                            { label: 'Upload Efficiency', val: 94, color: 'var(--primary)' },
-                            { label: 'Share Success Rate', val: 100, color: '#10b981' },
-                            { label: 'Security Score', val: 98, color: '#8b5cf6' }
+                            { label: 'Upload Efficiency', val: 94, color: '#ffffff' },
+                            { label: 'Share Success Rate', val: 100, color: '#ffffff' },
+                            { label: 'Security Score', val: 98, color: '#ffffff' }
                         ].map((bar, i) => (
                             <div key={i}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '0.875rem' }}>
                                     <span>{bar.label}</span>
                                     <span style={{ fontWeight: 600 }}>{bar.val}%</span>
                                 </div>
-                                <div style={{ height: '8px', background: '#f1f5f9', borderRadius: '4px' }}>
+                                <div style={{ height: '8px', background: '#333333', borderRadius: '4px' }}>
                                     <div style={{ width: `${bar.val}%`, height: '100%', background: bar.color, borderRadius: '4px' }} />
                                 </div>
                             </div>
