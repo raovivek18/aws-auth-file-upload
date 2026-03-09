@@ -15,9 +15,9 @@ const ShareModal = ({ isOpen, onClose, file, onGenerate }) => {
     const [existingShares, setExistingShares] = useState([]);
     const [isLoadingShares, setIsLoadingShares] = useState(false);
 
-    // 5 mins for private, 24 hours for public (simulation)
+    // 5 mins for private, 1 hour for public (max limit for AWS Cognito STS temporary credentials)
     const PRIVATE_EXPIRY = 300;
-    const PUBLIC_EXPIRY = 86400;
+    const PUBLIC_EXPIRY = 3600;
 
     useEffect(() => {
         let timer;
@@ -152,7 +152,7 @@ const ShareModal = ({ isOpen, onClose, file, onGenerate }) => {
                                 onClick={handleGenerate}
                                 disabled={isGenerating}
                             >
-                                {isGenerating ? 'Generating...' : `Generate ${isPublic ? '24-Hour' : '5-Minute'} Link`}
+                                {isGenerating ? 'Generating...' : `Generate ${isPublic ? '1-Hour' : '5-Minute'} Link`}
                             </button>
                         </div>
                     ) : (
