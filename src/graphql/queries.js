@@ -13,7 +13,6 @@ export const getActivityLog = /* GraphQL */ `
       ip
       createdAt
       updatedAt
-      owner
       __typename
     }
   }
@@ -35,7 +34,90 @@ export const listActivityLogs = /* GraphQL */ `
         ip
         createdAt
         updatedAt
-        owner
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const getUserAnalytics = /* GraphQL */ `
+  query GetUserAnalytics($id: ID!) {
+    getUserAnalytics(id: $id) {
+      id
+      totalFiles
+      totalStorage
+      totalShares
+      storageLimit
+      lastActive
+      createdAt
+      updatedAt
+      userId
+      __typename
+    }
+  }
+`;
+export const listUserAnalytics = /* GraphQL */ `
+  query ListUserAnalytics(
+    $filter: ModelUserAnalyticsFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listUserAnalytics(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        totalFiles
+        totalStorage
+        totalShares
+        storageLimit
+        lastActive
+        createdAt
+        updatedAt
+        userId
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const getSharedFile = /* GraphQL */ `
+  query GetSharedFile($id: ID!) {
+    getSharedFile(id: $id) {
+      id
+      fileId
+      sharedWith
+      userId
+      ownerEmail
+      fileName
+      fileKey
+      fileSize
+      fileType
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const listSharedFiles = /* GraphQL */ `
+  query ListSharedFiles(
+    $filter: ModelSharedFileFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listSharedFiles(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        fileId
+        sharedWith
+        userId
+        ownerEmail
+        fileName
+        fileKey
+        fileSize
+        fileType
+        createdAt
+        updatedAt
         __typename
       }
       nextToken
@@ -70,7 +152,6 @@ export const listLogsByUser = /* GraphQL */ `
         ip
         createdAt
         updatedAt
-        owner
         __typename
       }
       nextToken
@@ -78,62 +159,16 @@ export const listLogsByUser = /* GraphQL */ `
     }
   }
 `;
-export const getFileMetadata = /* GraphQL */ `
-  query GetFileMetadata($id: ID!) {
-    getFileMetadata(id: $id) {
-      id
-      name
-      size
-      type
-      key
-      owner
-      sharingStatus
-      shareExpiration
-      uploadTimestamp
-      createdAt
-      updatedAt
-      __typename
-    }
-  }
-`;
-export const listFileMetadata = /* GraphQL */ `
-  query ListFileMetadata(
-    $filter: ModelFileMetadataFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listFileMetadata(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        name
-        size
-        type
-        key
-        owner
-        sharingStatus
-        shareExpiration
-        uploadTimestamp
-        createdAt
-        updatedAt
-        __typename
-      }
-      nextToken
-      __typename
-    }
-  }
-`;
-export const listFileMetadataByOwner = /* GraphQL */ `
-  query ListFileMetadataByOwner(
-    $owner: String!
-    $uploadTimestamp: ModelStringKeyConditionInput
+export const sharedFilesByFileId = /* GraphQL */ `
+  query SharedFilesByFileId(
+    $fileId: ID!
     $sortDirection: ModelSortDirection
-    $filter: ModelFileMetadataFilterInput
+    $filter: ModelSharedFileFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    listFileMetadataByOwner(
-      owner: $owner
-      uploadTimestamp: $uploadTimestamp
+    sharedFilesByFileId(
+      fileId: $fileId
       sortDirection: $sortDirection
       filter: $filter
       limit: $limit
@@ -141,94 +176,9 @@ export const listFileMetadataByOwner = /* GraphQL */ `
     ) {
       items {
         id
-        name
-        size
-        type
-        key
-        owner
-        sharingStatus
-        shareExpiration
-        uploadTimestamp
-        createdAt
-        updatedAt
-        __typename
-      }
-      nextToken
-      __typename
-    }
-  }
-`;
-export const getUserAnalytics = /* GraphQL */ `
-  query GetUserAnalytics($id: ID!) {
-    getUserAnalytics(id: $id) {
-      id
-      totalFiles
-      totalStorage
-      totalShares
-      storageLimit
-      lastActive
-      createdAt
-      updatedAt
-      owner
-      __typename
-    }
-  }
-`;
-export const listUserAnalytics = /* GraphQL */ `
-  query ListUserAnalytics(
-    $filter: ModelUserAnalyticsFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listUserAnalytics(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        totalFiles
-        totalStorage
-        totalShares
-        storageLimit
-        lastActive
-        createdAt
-        updatedAt
-        owner
-        __typename
-      }
-      nextToken
-      __typename
-    }
-  }
-`;
-export const getSharedFile = /* GraphQL */ `
-  query GetSharedFile($id: ID!) {
-    getSharedFile(id: $id) {
-      id
-      fileId
-      sharedWith
-      ownerId
-      ownerEmail
-      fileName
-      fileKey
-      fileSize
-      fileType
-      createdAt
-      updatedAt
-      owner
-      __typename
-    }
-  }
-`;
-export const listSharedFiles = /* GraphQL */ `
-  query ListSharedFiles(
-    $filter: ModelSharedFileFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listSharedFiles(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
         fileId
         sharedWith
-        ownerId
+        userId
         ownerEmail
         fileName
         fileKey
@@ -236,7 +186,6 @@ export const listSharedFiles = /* GraphQL */ `
         fileType
         createdAt
         updatedAt
-        owner
         __typename
       }
       nextToken
@@ -265,7 +214,7 @@ export const listSharedWithMe = /* GraphQL */ `
         id
         fileId
         sharedWith
-        ownerId
+        userId
         ownerEmail
         fileName
         fileKey
@@ -273,7 +222,120 @@ export const listSharedWithMe = /* GraphQL */ `
         fileType
         createdAt
         updatedAt
-        owner
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const sharedFilesByUserId = /* GraphQL */ `
+  query SharedFilesByUserId(
+    $userId: String!
+    $sortDirection: ModelSortDirection
+    $filter: ModelSharedFileFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    sharedFilesByUserId(
+      userId: $userId
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        fileId
+        sharedWith
+        userId
+        ownerEmail
+        fileName
+        fileKey
+        fileSize
+        fileType
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const getFileMetadata = /* GraphQL */ `
+  query GetFileMetadata($id: ID!) {
+    getFileMetadata(id: $id) {
+      id
+      name
+      size
+      type
+      key
+      userId
+      sharingStatus
+      shareExpiration
+      uploadTimestamp
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const listFileMetadata = /* GraphQL */ `
+  query ListFileMetadata(
+    $filter: ModelFileMetadataFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listFileMetadata(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        name
+        size
+        type
+        key
+        userId
+        sharingStatus
+        shareExpiration
+        uploadTimestamp
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;
+export const listFileMetadataByUser = /* GraphQL */ `
+  query ListFileMetadataByUser(
+    $userId: String!
+    $uploadTimestamp: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelFileMetadataFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listFileMetadataByUser(
+      userId: $userId
+      uploadTimestamp: $uploadTimestamp
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        name
+        size
+        type
+        key
+        userId
+        sharingStatus
+        shareExpiration
+        uploadTimestamp
+        createdAt
+        updatedAt
         __typename
       }
       nextToken

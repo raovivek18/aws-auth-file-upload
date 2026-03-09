@@ -19,7 +19,7 @@ const metadataService = {
                         size: fileData.size,
                         type: fileData.type,
                         key: fileData.key,
-                        owner: fileData.owner, // This should be the sub (userId)
+                        userId: fileData.userId, // This should be the sub (userId)
                         sharingStatus: fileData.sharingStatus || 'PRIVATE',
                         shareExpiration: fileData.shareExpiration,
                         uploadTimestamp: new Date().toISOString()
@@ -37,13 +37,12 @@ const metadataService = {
     /**
      * Get file metadata for a user with pagination support
      */
-    getUserFiles: async (owner, limit = 10, nextToken = null) => {
+    getUserFiles: async (userId, limit = 10, nextToken = null) => {
         try {
-            // owner should be the userId (sub)
             const result = await client.graphql({
-                query: queries.listFileMetadataByOwner,
+                query: queries.listFileMetadataByUser,
                 variables: {
-                    owner,
+                    userId,
                     limit,
                     nextToken,
                     sortDirection: 'DESC'
@@ -52,14 +51,13 @@ const metadataService = {
             });
 
             return {
-                items: result.data?.listFileMetadataByOwner?.items || [],
-                nextToken: result.data?.listFileMetadataByOwner?.nextToken
+                items: result.data?.listFileMetadataByUser?.items || [],
+                nextToken: result.data?.listFileMetadataByUser?.nextToken
             };
         } catch (error) {
-            // Enhanced logging for debugging the "Failed to load" issue
             logger.error('Query metadata failed', {
                 error,
-                owner,
+                userId,
                 errors: error.errors,
                 message: error.message
             });
@@ -70,22 +68,21 @@ const metadataService = {
     /**
      * Check if a file with the same name already exists for the user
      */
-    checkFileExists: async (name, owner) => {
+    checkFileExists: async (name, userId) => {
         try {
-            // owner should be the userId (sub)
             const result = await client.graphql({
-                query: queries.listFileMetadataByOwner,
+                query: queries.listFileMetadataByUser,
                 variables: {
-                    owner,
+                    userId,
                     filter: {
                         name: { eq: name }
                     }
                 },
                 authMode: 'userPool'
             });
-            return (result.data?.listFileMetadataByOwner?.items?.length || 0) > 0;
+            return (result.data?.listFileMetadataByUser?.items?.length || 0) > 0;
         } catch (error) {
-            logger.error('Check file exists query failed', { error, name, owner });
+            logger.error('Check file exists query failed', { error, name, userId });
             return false;
         }
     },

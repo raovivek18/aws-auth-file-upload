@@ -4,9 +4,9 @@
 export const onCreateActivityLog = /* GraphQL */ `
   subscription OnCreateActivityLog(
     $filter: ModelSubscriptionActivityLogFilterInput
-    $owner: String
+    $userId: String
   ) {
-    onCreateActivityLog(filter: $filter, owner: $owner) {
+    onCreateActivityLog(filter: $filter, userId: $userId) {
       id
       userId
       actionType
@@ -16,7 +16,6 @@ export const onCreateActivityLog = /* GraphQL */ `
       ip
       createdAt
       updatedAt
-      owner
       __typename
     }
   }
@@ -24,9 +23,9 @@ export const onCreateActivityLog = /* GraphQL */ `
 export const onUpdateActivityLog = /* GraphQL */ `
   subscription OnUpdateActivityLog(
     $filter: ModelSubscriptionActivityLogFilterInput
-    $owner: String
+    $userId: String
   ) {
-    onUpdateActivityLog(filter: $filter, owner: $owner) {
+    onUpdateActivityLog(filter: $filter, userId: $userId) {
       id
       userId
       actionType
@@ -36,7 +35,6 @@ export const onUpdateActivityLog = /* GraphQL */ `
       ip
       createdAt
       updatedAt
-      owner
       __typename
     }
   }
@@ -44,9 +42,9 @@ export const onUpdateActivityLog = /* GraphQL */ `
 export const onDeleteActivityLog = /* GraphQL */ `
   subscription OnDeleteActivityLog(
     $filter: ModelSubscriptionActivityLogFilterInput
-    $owner: String
+    $userId: String
   ) {
-    onDeleteActivityLog(filter: $filter, owner: $owner) {
+    onDeleteActivityLog(filter: $filter, userId: $userId) {
       id
       userId
       actionType
@@ -56,7 +54,141 @@ export const onDeleteActivityLog = /* GraphQL */ `
       ip
       createdAt
       updatedAt
-      owner
+      __typename
+    }
+  }
+`;
+export const onCreateUserAnalytics = /* GraphQL */ `
+  subscription OnCreateUserAnalytics(
+    $filter: ModelSubscriptionUserAnalyticsFilterInput
+    $userId: String
+  ) {
+    onCreateUserAnalytics(filter: $filter, userId: $userId) {
+      id
+      totalFiles
+      totalStorage
+      totalShares
+      storageLimit
+      lastActive
+      createdAt
+      updatedAt
+      userId
+      __typename
+    }
+  }
+`;
+export const onUpdateUserAnalytics = /* GraphQL */ `
+  subscription OnUpdateUserAnalytics(
+    $filter: ModelSubscriptionUserAnalyticsFilterInput
+    $userId: String
+  ) {
+    onUpdateUserAnalytics(filter: $filter, userId: $userId) {
+      id
+      totalFiles
+      totalStorage
+      totalShares
+      storageLimit
+      lastActive
+      createdAt
+      updatedAt
+      userId
+      __typename
+    }
+  }
+`;
+export const onDeleteUserAnalytics = /* GraphQL */ `
+  subscription OnDeleteUserAnalytics(
+    $filter: ModelSubscriptionUserAnalyticsFilterInput
+    $userId: String
+  ) {
+    onDeleteUserAnalytics(filter: $filter, userId: $userId) {
+      id
+      totalFiles
+      totalStorage
+      totalShares
+      storageLimit
+      lastActive
+      createdAt
+      updatedAt
+      userId
+      __typename
+    }
+  }
+`;
+export const onCreateSharedFile = /* GraphQL */ `
+  subscription OnCreateSharedFile(
+    $filter: ModelSubscriptionSharedFileFilterInput
+    $userId: String
+    $sharedWith: String
+  ) {
+    onCreateSharedFile(
+      filter: $filter
+      userId: $userId
+      sharedWith: $sharedWith
+    ) {
+      id
+      fileId
+      sharedWith
+      userId
+      ownerEmail
+      fileName
+      fileKey
+      fileSize
+      fileType
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onUpdateSharedFile = /* GraphQL */ `
+  subscription OnUpdateSharedFile(
+    $filter: ModelSubscriptionSharedFileFilterInput
+    $userId: String
+    $sharedWith: String
+  ) {
+    onUpdateSharedFile(
+      filter: $filter
+      userId: $userId
+      sharedWith: $sharedWith
+    ) {
+      id
+      fileId
+      sharedWith
+      userId
+      ownerEmail
+      fileName
+      fileKey
+      fileSize
+      fileType
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onDeleteSharedFile = /* GraphQL */ `
+  subscription OnDeleteSharedFile(
+    $filter: ModelSubscriptionSharedFileFilterInput
+    $userId: String
+    $sharedWith: String
+  ) {
+    onDeleteSharedFile(
+      filter: $filter
+      userId: $userId
+      sharedWith: $sharedWith
+    ) {
+      id
+      fileId
+      sharedWith
+      userId
+      ownerEmail
+      fileName
+      fileKey
+      fileSize
+      fileType
+      createdAt
+      updatedAt
       __typename
     }
   }
@@ -64,15 +196,15 @@ export const onDeleteActivityLog = /* GraphQL */ `
 export const onCreateFileMetadata = /* GraphQL */ `
   subscription OnCreateFileMetadata(
     $filter: ModelSubscriptionFileMetadataFilterInput
-    $owner: String
+    $userId: String
   ) {
-    onCreateFileMetadata(filter: $filter, owner: $owner) {
+    onCreateFileMetadata(filter: $filter, userId: $userId) {
       id
       name
       size
       type
       key
-      owner
+      userId
       sharingStatus
       shareExpiration
       uploadTimestamp
@@ -85,15 +217,15 @@ export const onCreateFileMetadata = /* GraphQL */ `
 export const onUpdateFileMetadata = /* GraphQL */ `
   subscription OnUpdateFileMetadata(
     $filter: ModelSubscriptionFileMetadataFilterInput
-    $owner: String
+    $userId: String
   ) {
-    onUpdateFileMetadata(filter: $filter, owner: $owner) {
+    onUpdateFileMetadata(filter: $filter, userId: $userId) {
       id
       name
       size
       type
       key
-      owner
+      userId
       sharingStatus
       shareExpiration
       uploadTimestamp
@@ -106,15 +238,15 @@ export const onUpdateFileMetadata = /* GraphQL */ `
 export const onDeleteFileMetadata = /* GraphQL */ `
   subscription OnDeleteFileMetadata(
     $filter: ModelSubscriptionFileMetadataFilterInput
-    $owner: String
+    $userId: String
   ) {
-    onDeleteFileMetadata(filter: $filter, owner: $owner) {
+    onDeleteFileMetadata(filter: $filter, userId: $userId) {
       id
       name
       size
       type
       key
-      owner
+      userId
       sharingStatus
       shareExpiration
       uploadTimestamp

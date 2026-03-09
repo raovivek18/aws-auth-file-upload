@@ -12,7 +12,7 @@ export const createFileMetadata = /* GraphQL */ `
       size
       type
       key
-      owner
+      userId
       sharingStatus
       shareExpiration
       uploadTimestamp
@@ -33,7 +33,7 @@ export const updateFileMetadata = /* GraphQL */ `
       size
       type
       key
-      owner
+      userId
       sharingStatus
       shareExpiration
       uploadTimestamp
@@ -54,7 +54,7 @@ export const deleteFileMetadata = /* GraphQL */ `
       size
       type
       key
-      owner
+      userId
       sharingStatus
       shareExpiration
       uploadTimestamp
@@ -79,7 +79,6 @@ export const createActivityLog = /* GraphQL */ `
       ip
       createdAt
       updatedAt
-      owner
       __typename
     }
   }
@@ -99,7 +98,6 @@ export const updateActivityLog = /* GraphQL */ `
       ip
       createdAt
       updatedAt
-      owner
       __typename
     }
   }
@@ -119,7 +117,6 @@ export const deleteActivityLog = /* GraphQL */ `
       ip
       createdAt
       updatedAt
-      owner
       __typename
     }
   }
@@ -138,7 +135,7 @@ export const createUserAnalytics = /* GraphQL */ `
       lastActive
       createdAt
       updatedAt
-      owner
+      userId
       __typename
     }
   }
@@ -157,7 +154,7 @@ export const updateUserAnalytics = /* GraphQL */ `
       lastActive
       createdAt
       updatedAt
-      owner
+      userId
       __typename
     }
   }
@@ -176,7 +173,7 @@ export const deleteUserAnalytics = /* GraphQL */ `
       lastActive
       createdAt
       updatedAt
-      owner
+      userId
       __typename
     }
   }
@@ -190,7 +187,7 @@ export const createSharedFile = /* GraphQL */ `
       id
       fileId
       sharedWith
-      ownerId
+      userId
       ownerEmail
       fileName
       fileKey
@@ -198,7 +195,27 @@ export const createSharedFile = /* GraphQL */ `
       fileType
       createdAt
       updatedAt
-      owner
+      __typename
+    }
+  }
+`;
+export const updateSharedFile = /* GraphQL */ `
+  mutation UpdateSharedFile(
+    $input: UpdateSharedFileInput!
+    $condition: ModelSharedFileConditionInput
+  ) {
+    updateSharedFile(input: $input, condition: $condition) {
+      id
+      fileId
+      sharedWith
+      userId
+      ownerEmail
+      fileName
+      fileKey
+      fileSize
+      fileType
+      createdAt
+      updatedAt
       __typename
     }
   }
@@ -212,7 +229,7 @@ export const deleteSharedFile = /* GraphQL */ `
       id
       fileId
       sharedWith
-      ownerId
+      userId
       ownerEmail
       fileName
       fileKey
@@ -220,7 +237,6 @@ export const deleteSharedFile = /* GraphQL */ `
       fileType
       createdAt
       updatedAt
-      owner
       __typename
     }
   }

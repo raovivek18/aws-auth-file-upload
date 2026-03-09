@@ -73,7 +73,7 @@ const fileService = {
                 size: file.size,
                 type: file.type,
                 key: s3Key,
-                owner: userId, // Ensure we use the passed userId for owner
+                userId: userId, // Ensure we use the passed userId for metadata
                 sharingStatus: 'PRIVATE'
             });
 
@@ -111,7 +111,7 @@ const fileService = {
      * Deletes a file from storage and its corresponding metadata
      */
     deleteFile: async (file, currentUserId) => {
-        if (file.owner !== currentUserId) {
+        if (file.userId !== currentUserId) {
             throw new Error('Authorization failed: You do not own this file.');
         }
 
@@ -143,7 +143,7 @@ const fileService = {
      * Toggles file privacy
      */
     toggleFilePrivacy: async (file, currentUserId) => {
-        if (file.owner !== currentUserId) {
+        if (file.userId !== currentUserId) {
             throw new Error('Authorization failed: You do not own this file.');
         }
 
@@ -167,7 +167,7 @@ const fileService = {
 
     generateShareLink: async (file, currentUserId, expiresIn = 3600) => {
         try {
-            if (file.owner !== currentUserId) {
+            if (file.userId !== currentUserId) {
                 throw new Error('Authorization failed: Only owners can generate share links.');
             }
 
@@ -202,7 +202,7 @@ const fileService = {
      * Renames a file's metadata
      */
     renameFile: async (file, newName, currentUserId) => {
-        if (file.owner !== currentUserId) {
+        if (file.userId !== currentUserId) {
             throw new Error('Authorization failed: You do not own this file.');
         }
 

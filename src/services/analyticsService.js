@@ -124,14 +124,14 @@ const analyticsService = {
         try {
             const { userId } = await getCurrentUser();
 
-            // Get all files for user
+            // Get all files for user - Using updated index query
             const filesResult = await client.graphql({
-                query: queries.listFileMetadataByOwner,
-                variables: { owner: userId },
+                query: queries.listFileMetadataByUser,
+                variables: { userId },
                 authMode: 'userPool'
             });
 
-            const files = filesResult.data?.listFileMetadataByOwner?.items || [];
+            const files = filesResult.data?.listFileMetadataByUser?.items || [];
             const totalFiles = files.length;
             const totalStorage = files.reduce((acc, f) => acc + f.size, 0);
 

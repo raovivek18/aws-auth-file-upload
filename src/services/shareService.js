@@ -45,7 +45,7 @@ const shareService = {
                     input: {
                         fileId: file.id,
                         sharedWith: recipientEmail,
-                        ownerId: userId,
+                        userId: userId,
                         ownerEmail: ownerEmail,
                         fileName: file.name,
                         fileKey: file.key,

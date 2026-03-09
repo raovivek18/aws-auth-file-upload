@@ -1,5 +1,5 @@
 type FileMetadata @model @auth(rules: [
-  { allow: owner },
+  { allow: owner, ownerField: "userId" },
   { allow: public, operations: [read] }
 ]) {
   id: ID!
@@ -7,14 +7,14 @@ type FileMetadata @model @auth(rules: [
   size: Int!
   type: String!
   key: String!
-  owner: String! @index(name: "byOwner", queryField: "listFileMetadataByOwner", sortKeyFields: ["uploadTimestamp"])
+  userId: String! @index(name: "byUser", queryField: "listFileMetadataByUser", sortKeyFields: ["uploadTimestamp"])
   sharingStatus: SharingStatus
   shareExpiration: AWSDateTime
   uploadTimestamp: AWSDateTime!
 }
 
 type ActivityLog @model @auth(rules: [
-  { allow: owner }
+  { allow: owner, ownerField: "userId" }
 ]) {
   id: ID!
   userId: String! @index(name: "byUser", queryField: "listLogsByUser", sortKeyFields: ["timestamp"])
@@ -31,24 +31,24 @@ enum SharingStatus {
 }
 
 type UserAnalytics @model @auth(rules: [
-  { allow: owner }
+  { allow: owner, ownerField: "userId" }
 ]) {
   id: ID! # userId (sub)
   totalFiles: Int!
-  totalStorage: AWSInt! # Total bytes used
+  totalStorage: Int! # Total bytes used - Fixed from AWSInt
   totalShares: Int!
-  storageLimit: AWSInt! # Optional: for quota tracking
+  storageLimit: Int! # Fixed from AWSInt
   lastActive: AWSDateTime!
 }
 
 type SharedFile @model @auth(rules: [
-  { allow: owner }, # The sharer is the creator/owner
+  { allow: owner, ownerField: "userId" }, # The sharer is the creator/owner
   { allow: owner, ownerField: "sharedWith", operations: [read] } # The recipient has read access
 ]) {
   id: ID!
   fileId: ID! @index(name: "byFile")
   sharedWith: String! @index(name: "byRecipient", queryField: "listSharedWithMe", sortKeyFields: ["createdAt"]) # recipient email
-  ownerId: String!
+  userId: String! @index(name: "byUser") # Changed from ownerId
   ownerEmail: String
   fileName: String!
   fileKey: String!
