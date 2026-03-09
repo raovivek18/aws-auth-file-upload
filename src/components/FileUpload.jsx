@@ -188,7 +188,7 @@ const FileUpload = ({ onStatusChange }) => {
     }, []);
 
     const handleDelete = async () => {
-        const identifier = user?.userId;
+        const identifier = user?.userId || user?.username || user?.attributes?.sub;
         const file = showDeleteConfirm.file;
         if (!file || !identifier) return;
 
@@ -221,7 +221,7 @@ const FileUpload = ({ onStatusChange }) => {
     }, [user?.userId]);
 
     const handleGenerateLink = async (file, expiresIn) => {
-        const identifier = user?.userId;
+        const identifier = user?.userId || user?.username || user?.attributes?.sub;
         if (!identifier) return;
         return await fileService.generateShareLink(file, identifier, expiresIn);
     };

@@ -175,8 +175,7 @@ const fileService = {
                 key: file.key,
                 options: {
                     accessLevel: 'private',
-                    expiresIn,
-                    validateObjectExistence: true
+                    expiresIn
                 }
             });
 
