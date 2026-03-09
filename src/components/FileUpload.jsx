@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import fileService from '../services/fileService';
 import ShareModal from './ShareModal';
@@ -135,11 +135,13 @@ const FileUpload = ({ onStatusChange }) => {
         if (user?.userId) {
             fetchFiles(true);
         }
-    }, [user?.userId]);
+    }, [user?.userId, user?.username, user?.attributes?.sub]);
 
     /**
      * Enhanced upload with retry logic
      */
+    const delay = (ms) => new Promise(r => setTimeout(r, ms));
+
     const performUploadWithRetry = async (selectedFile, identifier, onProgress, maxRetries = 2) => {
         let attempt = 0;
         while (attempt <= maxRetries) {
@@ -149,8 +151,7 @@ const FileUpload = ({ onStatusChange }) => {
                 attempt++;
                 if (attempt > maxRetries) throw err;
                 logger.warn(`Upload attempt ${attempt} failed, retrying...`, { fileName: selectedFile.name });
-                // Small delay before retry
-                await new Promise(r => setTimeout(r, 1000 * attempt));
+                await delay(1000 * attempt);
             }
         }
     };
@@ -218,13 +219,13 @@ const FileUpload = ({ onStatusChange }) => {
         } catch (err) {
             toast.error('Failed to update visibility', { id: toggleId });
         }
-    }, [user?.userId]);
+    }, [user?.userId, user?.username, user?.attributes?.sub]);
 
-    const handleGenerateLink = async (file, expiresIn) => {
+    const handleGenerateLink = useCallback(async (file, expiresIn) => {
         const identifier = user?.userId || user?.username || user?.attributes?.sub;
         if (!identifier) return;
         return await fileService.generateShareLink(file, identifier, expiresIn);
-    };
+    }, [user?.userId, user?.username, user?.attributes?.sub]);
 
     const handleRename = async () => {
         const identifier = user?.userId || user?.username || user?.attributes?.sub;

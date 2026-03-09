@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import logger from '../services/loggerService';
 import shareService from '../services/shareService';
@@ -31,13 +31,7 @@ const ShareModal = ({ isOpen, onClose, file, onGenerate }) => {
         return () => clearInterval(timer);
     }, [shareUrl, timeLeft]);
 
-    useEffect(() => {
-        if (isOpen && file?.id) {
-            fetchExistingShares();
-        }
-    }, [isOpen, file?.id]);
-
-    const fetchExistingShares = async () => {
+    const fetchExistingShares = useCallback(async () => {
         try {
             setIsLoadingShares(true);
             const shares = await shareService.getFileShares(file.id);
@@ -47,7 +41,13 @@ const ShareModal = ({ isOpen, onClose, file, onGenerate }) => {
         } finally {
             setIsLoadingShares(false);
         }
-    };
+    }, [file?.id]);
+
+    useEffect(() => {
+        if (isOpen && file?.id) {
+            fetchExistingShares();
+        }
+    }, [isOpen, file?.id, fetchExistingShares]);
 
     const handleEmailShare = async (e) => {
         e.preventDefault();
